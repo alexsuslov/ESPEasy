@@ -281,7 +281,8 @@ String json_number(  String name, String value){
   return "\"" + name + "\"" + ":" +  value;
 }
 
-// return "name":value from name , value
+
+// return "name":[0.0.0.0] from name , ipaddress
 String json_ip(  String name, IPAddress ipaddress){
   return "\"" + name + "\"" + ":[" +
      String(ipaddress[0]) + "," +

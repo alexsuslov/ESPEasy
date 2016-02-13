@@ -10,15 +10,22 @@ http://sourceforge.net/projects/espeasy/
 Wiki: http://www.esp8266.nu
 Forum: http://www.esp8266.nu/forum
 
-## Install
 
-Download
+
+## Deps libs in R048 arhive
+
+[arduino 1.6.5][https://www.arduino.cc/en/Main/OldSoftwareReleases#previous]
+
+Download usefull libs arhive
 
 [ESPEasy%20R048.zip][http://sourceforge.net/projects/espeasy/files/ESPEasy%20R048.zip/download]
 
-and 
+then 
 
 ```
 git clone https://github.com/ESP8266nu/ESPEasy.git
 ```
 
+## Important
+
+Compile only in arduino 1.6.5
