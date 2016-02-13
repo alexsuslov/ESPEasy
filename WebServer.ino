@@ -4,30 +4,37 @@
 void WebServerInit()
 {
   // Prepare webserver pages
-  WebServer.on("/", handle_root);
-  WebServer.on("/config", handle_config);
-  // json config
-  WebServer.on("/api/config", handle_config_json);
-  WebServer.on("/hardware", handle_hardware);
-  WebServer.on("/devices", handle_devices);
-  WebServer.on("/log", handle_log);
-  WebServer.on("/tools", handle_tools);
-  WebServer.on("/i2cscanner", handle_i2cscanner);
-  WebServer.on("/wifiscanner", handle_wifiscanner);
-  WebServer.on("/login", handle_login);
-  WebServer.on("/control", handle_control);
-  WebServer.on("/download", handle_download);
-  WebServer.on("/upload", HTTP_GET, handle_upload);
-  WebServer.on("/upload", HTTP_POST, handle_upload_post, handleFileUpload);
+  WebServer.on( F("/"), handle_root);
+  WebServer.on( F("/config"), handle_config);
+  // [get]/api/config
+  WebServer.on( F("/api/config"), handle_config_json);
+
+  WebServer.on(F("/hardware"), handle_hardware);
+
+  // [get]/api/hardware json
+  WebServer.on(F("/api/hardware"), handle_hardware_json);
+
+  WebServer.on(F("/devices"), handle_devices);
+  WebServer.on(F("/log"), handle_log);
+  WebServer.on(F("/tools"), handle_tools);
+  WebServer.on(F("/i2cscanner"), handle_i2cscanner);
+  WebServer.on(F("/wifiscanner"), handle_wifiscanner);
+  // [get]/api/hardware json
+  WebServer.on(F("/api/wifiscanner"), handle_wifiscanner_json);
+  WebServer.on(F("/login"), handle_login);
+  WebServer.on(F("/control"), handle_control);
+  WebServer.on(F("/download"), handle_download);
+  WebServer.on(F("/upload"), HTTP_GET, handle_upload);
+  WebServer.on(F("/upload"), HTTP_POST, handle_upload_post, handleFileUpload);
   WebServer.onNotFound(handleNotFound);
 #if FEATURE_SPIFFS
-  WebServer.on("/filelist", handle_filelist);
+  WebServer.on(F("/filelist"), handle_filelist);
 #else
-  WebServer.on("/esp.css", handle_css);
+  WebServer.on(F("/esp.css"), handle_css);
 #endif
-  WebServer.on("/advanced", handle_advanced);
-  WebServer.on("/setup", handle_setup);
-  WebServer.on("/json", handle_json);
+  WebServer.on(F("/advanced"), handle_advanced);
+  WebServer.on(F("/setup"), handle_setup);
+  WebServer.on(F("/json", handle_json);
 
   if (ESP.getFlashChipRealSize() > 524288)
     httpUpdater.setup(&WebServer);
@@ -282,17 +289,6 @@ String json_number(  String name, String value){
 }
 
 
-// return "name":[0.0.0.0] from name , ipaddress
-String json_ip(  String name, IPAddress ipaddress){
-  return "\"" + name + "\"" + ":[" +
-     String(ipaddress[0]) + "," +
-     String(ipaddress[1]) + "," +
-     String(ipaddress[2]) + "," +
-     String(ipaddress[3])
-    + "]";
-}
-
-
 // return "name":{value} from name , value
 String json_object(  String name, String value){
   return "\"" + name + "\"" + ":{" + value + "}";
@@ -311,59 +307,59 @@ String json_array(  String name, String value){
 void handle_config_json() {
   if (!isLoggedInApi()) return;
   // open json
-  String reply = "{";
+  String reply = F("{");
 
   // Settings
-  reply += json_object("Settings",
-    json_string( "Name", Settings.Name) +
-    ", " + json_string( "Unit", String(Settings.Unit) ) +
-    ", " + json_string( "Protocol", String(Settings.Protocol)) +
-    ", " + json_array( "Controller_IP",
+  reply += json_object( F("Settings"),
+    json_string( F("Name"), Settings.Name) +
+    ", " + json_string( F("Unit"), String(Settings.Unit) ) +
+    ", " + json_string( F("Protocol"), String(Settings.Protocol)) +
+    ", " + json_array( F("Controller_IP"),
       String(Settings.Controller_IP[0]) + "," +
       String(Settings.Controller_IP[1]) + "," +
       String(Settings.Controller_IP[2]) + "," +
       String(Settings.Controller_IP[3])
       ) +
-    ", " + json_array( "IP",
+    ", " + json_array( F("IP"),
       String(Settings.IP[0]) + "," +
       String(Settings.IP[1]) + "," +
       String(Settings.IP[2]) + "," +
       String(Settings.IP[3])
       ) +
-    ", " + json_array( "Subnet",
+    ", " + json_array( F("Subnet"),
       String(Settings.Subnet[0]) + "," +
       String(Settings.Subnet[1]) + "," +
       String(Settings.Subnet[2]) + "," +
       String(Settings.Subnet[3])
       ) +
-    ", " + json_array( "DNS",
+    ", " + json_array( F("DNS"),
       String(Settings.DNS[0]) + "," +
       String(Settings.DNS[1]) + "," +
       String(Settings.DNS[2]) + "," +
       String(Settings.DNS[3])
       ) +
-    ", " + json_string( "ControllerHostName", Settings.ControllerHostName) +
-    ", " + json_string( "Delay", String(Settings.Delay)) +
-    ", " + json_string( "deepSleep", String(Settings.deepSleep)) +
-    ", " + json_string( "ControllerPort", String( Settings.ControllerPort) )
+    ", " + json_string( F("ControllerHostName"), Settings.ControllerHostName) +
+    ", " + json_string( F("Delay"), String(Settings.Delay)) +
+    ", " + json_string( F("deepSleep"), String(Settings.deepSleep)) +
+    ", " + json_string( F("ControllerPort"), String( Settings.ControllerPort) )
     );
 
   // SecuritySettings
-  reply += ", " + json_object("SecuritySettings",
-    json_string( "WifiSSID", SecuritySettings.WifiSSID) +
-    ", " + json_string( "WifiKey", SecuritySettings.WifiKey) +
-    ", " + json_string( "WifiAPKey", SecuritySettings.WifiAPKey) +
-    ", " + json_string( "ControllerPassword", SecuritySettings.ControllerPassword) +
-    ", " + json_string( "ControllerUser", SecuritySettings.ControllerUser)
+  reply += ", " + json_object(F("SecuritySettings"),
+    json_string( F("WifiSSID"), SecuritySettings.WifiSSID) +
+    ", " + json_string( F("WifiKey"), SecuritySettings.WifiKey) +
+    ", " + json_string( F("WifiAPKey"), SecuritySettings.WifiAPKey) +
+    ", " + json_string( F("ControllerPassword"), SecuritySettings.ControllerPassword) +
+    ", " + json_string( F("ControllerUser"), SecuritySettings.ControllerUser)
     );
 
   // close json
-  reply += "}\n";
+  reply += F("}\n");
 
   // debug
   // Serial.println(reply);
   // send to client
-  WebServer.send(200, "application/json", reply);
+  WebServer.send(200, F("application/json"), reply);
 }
 
 
@@ -577,6 +573,30 @@ void handle_config() {
   reply += F("</table></form>");
   addFooter(reply);
   WebServer.send(200, "text/html", reply);
+}
+
+
+//********************************************************************************
+// api Interface hardware json
+//********************************************************************************
+void handle_hardware_json() {
+  if (!isLoggedInApi()) return;
+  // open json
+  String reply = F("{");
+
+  reply += json_string( F("Pin_i2c_sda"), String(Settings.Pin_i2c_sda) );
+  reply += "," + json_string( F("Pin_i2c_scl"), String(Settings.Pin_i2c_scl) );
+  for (byte x=0; x < 17; x++){
+    reply += "," + json_string( "p" + String(x), String(Settings.PinStates[x]) );
+  }
+
+  // close json
+  reply += F("}\n");
+
+  // debug
+  // Serial.println(reply);
+  // send to client
+  WebServer.send(200, F("application/json"), reply);
 }
 
 
@@ -1466,6 +1486,39 @@ void handle_i2cscanner() {
   addFooter(reply);
   WebServer.send(200, "text/html", reply);
   free(TempString);
+}
+
+//********************************************************************************
+// Web Interface Wifi scanner
+//********************************************************************************
+void handle_wifiscanner_json() {
+  if (!isLoggedInApi()) return;
+
+  // open json
+  String reply = F("{");
+  String Networks = F("");
+  String comma = reply;
+  int n = WiFi.scanNetworks();
+  if (n == 0){
+    reply += json_string( F("error"), F("No Access Points found") );
+  } else {
+    for (int i = 0; i < n; ++i) {
+      Networks += comma +  json_string( F("SSID"), WiFi.SSID(i) ) + ",";
+      Networks += json_string( F("RSSI"), String(WiFi.RSSI(i) ) );
+      Networks += "}";
+      comma = F(",{");
+    }
+    reply += json_array( F("Networks"), Networks);
+  }
+
+  // close json
+  reply += F("}\n");
+
+  // debug
+  // Serial.println(reply);
+  // send to client
+  WebServer.send(200, F("application/json"), reply);
+
 }
 
 
