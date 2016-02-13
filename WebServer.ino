@@ -6,6 +6,8 @@ void WebServerInit()
   // Prepare webserver pages
   WebServer.on("/", handle_root);
   WebServer.on("/config", handle_config);
+  // json config
+  WebServer.on("/api/config", handle_config_json);
   WebServer.on("/hardware", handle_hardware);
   WebServer.on("/devices", handle_devices);
   WebServer.on("/log", handle_log);
@@ -267,6 +269,100 @@ void handle_root() {
 
     WebServer.send(200, "text/html", "OK");
   }
+}
+
+// return "name":"value" from name , value
+String json_string(  String name, String value  ){
+  return "\"" + name + "\"" + ":" + "\"" + value + "\"";
+}
+
+// return "name":value from name , value
+String json_number(  String name, String value){
+  return "\"" + name + "\"" + ":" +  value;
+}
+
+// return "name":value from name , value
+String json_ip(  String name, IPAddress ipaddress){
+  return "\"" + name + "\"" + ":[" +
+     String(ipaddress[0]) + "," +
+     String(ipaddress[1]) + "," +
+     String(ipaddress[2]) + "," +
+     String(ipaddress[3])
+    + "]";
+}
+
+
+// return "name":{value} from name , value
+String json_object(  String name, String value){
+  return "\"" + name + "\"" + ":{" + value + "}";
+}
+
+
+// return "name":[value] from name , value
+String json_array(  String name, String value){
+  return "\"" + name + "\"" + ":[" + value + "]";
+}
+
+
+//********************************************************************************
+// json config
+//********************************************************************************
+void handle_config_json() {
+  if (!isLoggedInApi()) return;
+  // open json
+  String reply = "{";
+
+  // Settings
+  reply += json_object("Settings",
+    json_string( "Name", Settings.Name) +
+    ", " + json_string( "Unit", String(Settings.Unit) ) +
+    ", " + json_string( "Protocol", String(Settings.Protocol)) +
+    ", " + json_array( "Controller_IP",
+      String(Settings.Controller_IP[0]) + "," +
+      String(Settings.Controller_IP[1]) + "," +
+      String(Settings.Controller_IP[2]) + "," +
+      String(Settings.Controller_IP[3])
+      ) +
+    ", " + json_array( "IP",
+      String(Settings.IP[0]) + "," +
+      String(Settings.IP[1]) + "," +
+      String(Settings.IP[2]) + "," +
+      String(Settings.IP[3])
+      ) +
+    ", " + json_array( "Subnet",
+      String(Settings.Subnet[0]) + "," +
+      String(Settings.Subnet[1]) + "," +
+      String(Settings.Subnet[2]) + "," +
+      String(Settings.Subnet[3])
+      ) +
+    ", " + json_array( "DNS",
+      String(Settings.DNS[0]) + "," +
+      String(Settings.DNS[1]) + "," +
+      String(Settings.DNS[2]) + "," +
+      String(Settings.DNS[3])
+      ) +
+    ", " + json_string( "ControllerHostName", Settings.ControllerHostName) +
+    ", " + json_string( "Delay", String(Settings.Delay)) +
+    ", " + json_string( "deepSleep", String(Settings.deepSleep)) +
+    ", " + json_string( "ControllerPort", String( Settings.ControllerPort) )
+    );
+
+  // SecuritySettings
+  reply += ", " + json_object("SecuritySettings",
+    json_string( "WifiSSID", SecuritySettings.WifiSSID) +
+    ", " + json_string( "WifiKey", SecuritySettings.WifiKey) +
+    ", " + json_string( "WifiAPKey", SecuritySettings.WifiAPKey) +
+    ", " + json_string( "ControllerPassword", SecuritySettings.ControllerPassword) +
+    ", " + json_string( "ControllerUser", SecuritySettings.ControllerUser)
+    );
+
+  // close json
+  reply += "}\n";
+
+  // debug
+  // Serial.println(reply);
+  // send to client
+  WebServer.send(200, "application/json", reply);
 }
 
 
@@ -1696,6 +1792,23 @@ void handle_advanced() {
   reply += F("</table></form>");
   addFooter(reply);
   WebServer.send(200, "text/html", reply);
+}
+
+// api version is Logged In
+boolean isLoggedInApi(){
+  if (SecuritySettings.Password[0] == 0)
+    WebLoggedIn = true;
+
+  if (!WebLoggedIn)
+  {
+    WebServer.send(401);
+  }
+  else
+  {
+    WebLoggedInTimer = 0;
+  }
+
+  return WebLoggedIn;
 }
 
 

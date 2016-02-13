@@ -9,3 +9,16 @@ http://sourceforge.net/projects/espeasy/
 
 Wiki: http://www.esp8266.nu
 Forum: http://www.esp8266.nu/forum
+
+## Install
+
+Download
+
+[ESPEasy%20R048.zip][http://sourceforge.net/projects/espeasy/files/ESPEasy%20R048.zip/download]
+
+and 
+
+```
+git clone https://github.com/ESP8266nu/ESPEasy.git
+```
+

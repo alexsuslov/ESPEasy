@@ -361,10 +361,10 @@ void setup()
   if (SpiffsSectors() == 0)
   {
     Serial.println("\nNo SPIFFS area..\nSystem Halted\nPlease reflash with SPIFFS");
-    while(true)
+    while (true)
       delay(1);
   }
-  
+
 #if FEATURE_SPIFFS
   fileSystemCheck();
 #endif
@@ -374,7 +374,7 @@ void setup()
   LoadSettings();
   if (strcasecmp(SecuritySettings.WifiSSID, "ssid") == 0)
     wifiSetup = true;
-  
+
   ExtraTaskSettings.TaskIndex = 255; // make sure this is an unused nr to prevent cache load on boot
 
   // if different version, eeprom settings structure has changed. Full Reset needed
@@ -454,7 +454,7 @@ void setup()
         lastBootCause = BOOT_CAUSE_COLD_BOOT;
       log = F("INIT : Cold Boot");
     }
-    
+
     addLog(LOG_LEVEL_INFO, log);
 
     saveToRTC(0);
@@ -474,11 +474,11 @@ void setup()
       initTime();
 #endif
 
-  // Start DNS, only used if the ESP has no valid WiFi config
-  // It will reply with it's own address on all DNS requests
-  // (captive portal concept)
-  if(wifiSetup)
-    dnsServer.start(DNS_PORT, "*", apIP);
+    // Start DNS, only used if the ESP has no valid WiFi config
+    // It will reply with it's own address on all DNS requests
+    // (captive portal concept)
+    if (wifiSetup)
+      dnsServer.start(DNS_PORT, "*", apIP);
 
   }
   else
@@ -502,7 +502,7 @@ void loop()
     WifiConnect();
     wifiSetupConnect = false;
   }
-  
+
   if (Serial.available())
   {
     if (!PluginCall(PLUGIN_SERIAL_IN, 0, dummyString))
@@ -565,7 +565,7 @@ void loop()
 #endif
       unsigned long timer = micros();
       PluginCall(PLUGIN_ONCE_A_SECOND, 0, dummyString);
-        
+
       timer = micros() - timer;
 
       timer1s = millis() + 1000;
@@ -671,7 +671,7 @@ void SensorSend()
 void backgroundtasks()
 {
   // process DNS, only used if the ESP has no valid WiFi config
-  if(wifiSetup)
+  if (wifiSetup)
     dnsServer.processNextRequest();
 
   checkUDP();
