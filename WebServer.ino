@@ -13,7 +13,7 @@ void WebServerInit()
   // [get]/api/hardware json
   WebServer.on("/api/hardware", handle_hardware_json);
 
-  // [get]/api/hardware json
+  // [get]/api/devices json
   WebServer.on("/api/devices", handle_devices_json);
   WebServer.on("/devices", handle_devices);
   WebServer.on("/log", handle_log);
@@ -704,13 +704,264 @@ void addPinStateSelect(String& str, String name,  int choice)
 void handle_devices_json() {
   if (!isLoggedInApi()) return;
 
-  // open json
-  String reply = F("{");
-  // close json
-  reply += F("}");
+/////////////////////////////////////////////////////////////
+  char tmpString[41];
+  struct EventStruct TempEvent;
 
+  // open json
+  String reply = F("[");
+  String comma = "{";
+
+  String deviceName;
+  byte DeviceIndex = 0;
+
+  for (byte x = 0; x < TASKS_MAX; x++)
+  {    
+    LoadTaskSettings(x);
+    DeviceIndex = getDeviceIndex(Settings.TaskDeviceNumber[x]);
+    TempEvent.TaskIndex = x;
+
+    if (ExtraTaskSettings.TaskDeviceValueNames[0][0] == 0)
+      PluginCall(PLUGIN_GET_DEVICEVALUENAMES, &TempEvent, dummyString);
+
+    deviceName = "";
+    if (Settings.TaskDeviceNumber[x] != 0)
+      Plugin_ptr[DeviceIndex](PLUGIN_GET_DEVICENAME, &TempEvent, deviceName);
+
+    if ( deviceName.length() == 0 ) {
+      continue;
+    }
+
+    reply += comma;
+    reply += F("\"deviceId\":\"");
+    reply += String(x);
+    reply += F("\"");
+    comma = ",";
+    reply += comma;
+    reply += F("\"deviceName\":\"");
+    reply += deviceName;
+    reply += F("\"");
+    reply += comma;
+    reply += F("\"TaskDeviceName\":\"");
+    reply += ExtraTaskSettings.TaskDeviceName;
+    reply += F("\"");
+
+    byte customConfig = false;
+    String plg = "";
+    customConfig = PluginCall(PLUGIN_WEBFORM_SHOW_CONFIG, &TempEvent, plg);
+    if (plg.length() > 0) {
+        reply += comma;
+        reply += "\"pluginConfig\":\"" + plg + "\"";
+    }
+    if (!customConfig)
+      if (Device[DeviceIndex].Ports != 0) {
+        reply += comma;
+        reply += F("\"TaskDevicePort\":\"");
+        reply += Settings.TaskDevicePort[x];
+        reply += F("\"");
+      }
+
+    if (Settings.TaskDeviceID[x] != 0) {
+      reply += comma;
+      reply += F("\"TaskDeviceID\":\"");
+      reply += Settings.TaskDeviceID[x];
+      reply += F("\"");
+    }
+
+    /////////////// PINS START
+    if (Settings.TaskDeviceDataFeed[x] == 0) {
+      reply += comma;
+      reply += F("\"pins\":[");
+      comma = "";
+      if (Device[DeviceIndex].Type == DEVICE_TYPE_I2C)  {
+        reply += comma;
+        reply += Settings.Pin_i2c_sda;
+        comma = ",";
+        reply += comma;
+        reply += Settings.Pin_i2c_scl;
+      }
+      if (Device[DeviceIndex].Type == DEVICE_TYPE_ANALOG) {
+        reply += comma;
+        reply += 1; // ADC always 1
+        comma = ",";
+      }
+      if (Settings.TaskDevicePin1[x] != -1)  {
+        String s = String(Settings.TaskDevicePin1[x]);
+        if (s.length() > 0) {
+          reply += comma;
+          reply += s;
+          comma = ",";
+        }
+      }
+      if (Settings.TaskDevicePin2[x] != -1) {
+        reply += comma;
+        reply += Settings.TaskDevicePin2[x];
+        comma = ",";
+      }
+      if (Settings.TaskDevicePin3[x] != -1) {
+        reply += comma;
+        reply += F("\"PIN\":");
+        reply += Settings.TaskDevicePin3[x];
+        comma = ",";
+      }
+      reply += "]";
+    }
+    /////////////// PINS END
+    byte customValues = false;
+    String plgValues = "";
+    customValues = PluginCall(PLUGIN_WEBFORM_SHOW_VALUES, &TempEvent, plgValues);
+    if (plgValues.length() > 0) {
+        reply += comma;
+        reply += "\"pluginValues\":\"" + plgValues + "\"";
+    }
+    if (!customValues)
+    {
+      for (byte varNr = 0; varNr < VARS_PER_TASK; varNr++)
+      {
+        if ((Settings.TaskDeviceNumber[x] != 0) and (varNr < Device[DeviceIndex].ValueCount))
+        {
+          reply += comma;
+          reply += F("\"TaskDeviceValueName\":\"");
+          reply += ExtraTaskSettings.TaskDeviceValueNames[varNr];
+          reply += F("\"");
+          reply += comma;
+          reply += F("\"TaskDeviceValue\":\"");
+          reply += UserVar[x * VARS_PER_TASK + varNr];
+          reply += F("\"");
+        }
+      }
+    }
+ //// second block
+ /*
+    if (ExtraTaskSettings.TaskDeviceValueNames[0][0] == 0)
+      PluginCall(PLUGIN_GET_DEVICEVALUENAMES, &TempEvent, dummyString);
+
+    reply += F("<BR><BR><form name='frmselect' method='post'><table><TH>Task Settings<TH>Value");
+
+    reply += F("<TR><TD>Device:<TD>");
+    addDeviceSelect(reply, "taskdevicenumber", Settings.TaskDeviceNumber[index - 1]);
+
+    if (Settings.TaskDeviceNumber[index - 1] != 0 )
+    {
+      reply += F("<a class=\"button-link\" href=\"http://www.esp8266.nu/index.php/plugin");
+      reply += Settings.TaskDeviceNumber[index - 1];
+      reply += F("\" target=\"_blank\">?</a>");
+
+      reply += F("<TR><TD>Name:<TD><input type='text' maxlength='25' name='taskdevicename' value='");
+      reply += ExtraTaskSettings.TaskDeviceName;
+      reply += F("'>");
+
+
+      if (!Device[DeviceIndex].Custom)
+      {
+        reply += F("<TR><TD>IDX / Var:<TD><input type='text' name='taskdeviceid' value='");
+        reply += Settings.TaskDeviceID[index - 1];
+        reply += F("'>");
+      }
+
+      if (!Device[DeviceIndex].Custom && Settings.TaskDeviceDataFeed[index - 1] == 0)
+      {
+        if (Device[DeviceIndex].Ports != 0)
+        {
+          reply += F("<TR><TD>Port:<TD><input type='text' name='taskdeviceport' value='");
+          reply += Settings.TaskDevicePort[index - 1];
+          reply += F("'>");
+        }
+
+        if (Device[DeviceIndex].Type == DEVICE_TYPE_SINGLE || Device[DeviceIndex].Type == DEVICE_TYPE_DUAL)
+        {
+          reply += F("<TR><TD>1st GPIO:<TD>");
+          addPinSelect(false, reply, "taskdevicepin1", Settings.TaskDevicePin1[index - 1]);
+        }
+        if (Device[DeviceIndex].Type == DEVICE_TYPE_DUAL)
+        {
+          reply += F("<TR><TD>2nd GPIO:<TD>");
+          addPinSelect(false, reply, "taskdevicepin2", Settings.TaskDevicePin2[index - 1]);
+        }
+
+        if (Device[DeviceIndex].PullUpOption)
+        {
+          reply += F("<TR><TD>Pull UP:<TD>");
+          if (Settings.TaskDevicePin1PullUp[index - 1])
+            reply += F("<input type=checkbox name=taskdevicepin1pullup checked>");
+          else
+            reply += F("<input type=checkbox name=taskdevicepin1pullup>");
+        }
+
+        if (Device[DeviceIndex].InverseLogicOption)
+        {
+          reply += F("<TR><TD>Inversed:<TD>");
+          if (Settings.TaskDevicePin1Inversed[index - 1])
+            reply += F("<input type=checkbox name=taskdevicepin1inversed checked>");
+          else
+            reply += F("<input type=checkbox name=taskdevicepin1inversed>");
+        }
+      }
+
+      PluginCall(PLUGIN_WEBFORM_LOAD, &TempEvent, reply);
+
+      if (Device[DeviceIndex].SendDataOption)
+      {
+        reply += F("<TR><TD>Send Data:<TD>");
+        if (Settings.TaskDeviceSendData[index - 1])
+          reply += F("<input type=checkbox name=taskdevicesenddata checked>");
+        else
+          reply += F("<input type=checkbox name=taskdevicesenddata>");
+      }
+
+      if (Device[DeviceIndex].GlobalSyncOption && Settings.TaskDeviceDataFeed[index - 1] == 0 && Settings.UDPPort != 0)
+      {
+        reply += F("<TR><TD>Global Sync:<TD>");
+        if (Settings.TaskDeviceGlobalSync[index - 1])
+          reply += F("<input type=checkbox name=taskdeviceglobalsync checked>");
+        else
+          reply += F("<input type=checkbox name=taskdeviceglobalsync>");
+      }
+
+      if (!Device[DeviceIndex].Custom)
+      {
+        reply += F("<TR><TH>Optional Settings<TH>Value");
+
+        if (Device[DeviceIndex].FormulaOption)
+        {
+          for (byte varNr = 0; varNr < Device[DeviceIndex].ValueCount; varNr++)
+          {
+            reply += F("<TR><TD>Formula ");
+            reply += ExtraTaskSettings.TaskDeviceValueNames[varNr];
+            reply += F(":<TD><input type='text' maxlength='25' name='taskdeviceformula");
+            reply += varNr + 1;
+            reply += F("' value='");
+            reply += ExtraTaskSettings.TaskDeviceFormula[varNr];
+            reply += F("'>");
+            if (varNr == 0)
+              reply += F("<a class=\"button-link\" href=\"http://www.esp8266.nu/index.php/EasyFormula\" target=\"_blank\">?</a>");
+          }
+        }
+
+        for (byte varNr = 0; varNr < Device[DeviceIndex].ValueCount; varNr++)
+        {
+          reply += F("<TR><TD>Value Name ");
+          reply += varNr + 1;
+          reply += F(":<TD><input type='text' maxlength='25' name='taskdevicevaluename");
+          reply += varNr + 1;
+          reply += F("' value='");
+          reply += ExtraTaskSettings.TaskDeviceValueNames[varNr];
+          reply += F("'>");
+        }
+      }
+
+    }
+///////////// second block end
+*/
+    reply += "}";
+    comma = ",{";
+  }
+
+/////////////////////////////////////////////////////////////
+  // close json
+  reply += F("]");
   // debug
-  // Serial.println(reply);
+   Serial.println(reply);
   // send to client
   WebServer.send(200, F("application/json"), reply);
 
@@ -1513,7 +1764,7 @@ void handle_wifiscanner_json() {
 
   // open json
   String reply = F("{");
-  String Networks = F("");
+  String Networks = "";
   String comma = reply;
   int n = WiFi.scanNetworks();
   if (n == 0){
