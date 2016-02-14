@@ -4,37 +4,38 @@
 void WebServerInit()
 {
   // Prepare webserver pages
-  WebServer.on( F("/"), handle_root);
-  WebServer.on( F("/config"), handle_config);
+  WebServer.on( "/", handle_root);
+  WebServer.on( "/config", handle_config);
   // [get]/api/config
-  WebServer.on( F("/api/config"), handle_config_json);
+  WebServer.on( "/api/config", handle_config_json);
 
-  WebServer.on(F("/hardware"), handle_hardware);
+  WebServer.on("/hardware", handle_hardware);
+  // [get]/api/hardware json
+  WebServer.on("/api/hardware", handle_hardware_json);
 
   // [get]/api/hardware json
-  WebServer.on(F("/api/hardware"), handle_hardware_json);
-
-  WebServer.on(F("/devices"), handle_devices);
-  WebServer.on(F("/log"), handle_log);
-  WebServer.on(F("/tools"), handle_tools);
-  WebServer.on(F("/i2cscanner"), handle_i2cscanner);
-  WebServer.on(F("/wifiscanner"), handle_wifiscanner);
+  WebServer.on("/api/devices", handle_devices_json);
+  WebServer.on("/devices", handle_devices);
+  WebServer.on("/log", handle_log);
+  WebServer.on("/tools", handle_tools);
+  WebServer.on("/i2cscanner", handle_i2cscanner);
+  WebServer.on("/wifiscanner", handle_wifiscanner);
   // [get]/api/hardware json
-  WebServer.on(F("/api/wifiscanner"), handle_wifiscanner_json);
-  WebServer.on(F("/login"), handle_login);
-  WebServer.on(F("/control"), handle_control);
-  WebServer.on(F("/download"), handle_download);
-  WebServer.on(F("/upload"), HTTP_GET, handle_upload);
-  WebServer.on(F("/upload"), HTTP_POST, handle_upload_post, handleFileUpload);
+  WebServer.on("/api/wifiscanner", handle_wifiscanner_json);
+  WebServer.on("/login", handle_login);
+  WebServer.on("/control", handle_control);
+  WebServer.on("/download", handle_download);
+  WebServer.on("/upload", HTTP_GET, handle_upload);
+  WebServer.on("/upload", HTTP_POST, handle_upload_post, handleFileUpload);
   WebServer.onNotFound(handleNotFound);
 #if FEATURE_SPIFFS
-  WebServer.on(F("/filelist"), handle_filelist);
+  WebServer.on("/filelist", handle_filelist);
 #else
-  WebServer.on(F("/esp.css"), handle_css);
+  WebServer.on("/esp.css", handle_css);
 #endif
-  WebServer.on(F("/advanced"), handle_advanced);
-  WebServer.on(F("/setup"), handle_setup);
-  WebServer.on(F("/json", handle_json);
+  WebServer.on("/advanced", handle_advanced);
+  WebServer.on("/setup", handle_setup);
+  WebServer.on("/json", handle_json);
 
   if (ESP.getFlashChipRealSize() > 524288)
     httpUpdater.setup(&WebServer);
@@ -122,7 +123,7 @@ void addHeader(boolean showMenu, String& str)
 //********************************************************************************
 void addFooter(String& str)
 {
-  str += F("<h6>Powered by www.esp8266.nu</h6></body>");
+  str += F("<h6>Powered by 42do.ru</h6></body>");
 }
 
 
@@ -697,6 +698,22 @@ void addPinStateSelect(String& str, String name,  int choice)
     str += F("</option>");
   }
   str += F("</select>");
+}
+
+
+void handle_devices_json() {
+  if (!isLoggedInApi()) return;
+
+  // open json
+  String reply = F("{");
+  // close json
+  reply += F("}");
+
+  // debug
+  // Serial.println(reply);
+  // send to client
+  WebServer.send(200, F("application/json"), reply);
+
 }
 
 
@@ -1876,8 +1893,8 @@ boolean isLoggedIn()
 
   if (!WebLoggedIn)
   {
-    String reply = F("<a class=\"button-link\" href=\"login\">Login</a>");
-    WebServer.send(200, "text/html", reply);
+    // String reply = F("<a class=\"button-link\" href=\"login\">Login</a>");
+    WebServer.sendContent(F("HTTP/1.1 302 \r\nLocation: /login\r\n"));
   }
   else
   {
