@@ -585,6 +585,9 @@ void handle_config() {
 //********************************************************************************
 void handle_hardware_json() {
   if (!isLoggedInApi()) return;
+
+  hardware_save();
+  
   // open json
   String reply = F("{");
 
@@ -603,13 +606,10 @@ void handle_hardware_json() {
   WebServer.send(200, F("application/json"), reply);
 }
 
-
 //********************************************************************************
-// Web Interface hardware page
+// Web Interface hardware page - save data
 //********************************************************************************
-void handle_hardware() {
-  if (!isLoggedIn()) return;
-
+void hardware_save() {
   String pin_i2c_sda = WebServer.arg("psda");
   String pin_i2c_scl = WebServer.arg("pscl");
 
@@ -631,6 +631,15 @@ void handle_hardware() {
 
     SaveSettings();
   }
+
+}
+//********************************************************************************
+// Web Interface hardware page
+//********************************************************************************
+void handle_hardware() {
+  if (!isLoggedIn()) return;
+
+  hardware_save();
 
   String reply = "";
   addHeader(true, reply);
@@ -736,45 +745,37 @@ void handle_devices_json() {
     }
 
     reply += comma;
-    reply += F("\"deviceId\":\"");
-    reply += String(x);
-    reply += F("\"");
+    reply += json_string( F("DeviceId"), String(x) );
     comma = ",";
+
     reply += comma;
-    reply += F("\"deviceName\":\"");
-    reply += deviceName;
-    reply += F("\"");
+    reply += json_string( F("DeviceName"), deviceName );
+
     reply += comma;
-    reply += F("\"TaskDeviceName\":\"");
-    reply += ExtraTaskSettings.TaskDeviceName;
-    reply += F("\"");
+    reply += json_string( F("TaskDeviceName"), ExtraTaskSettings.TaskDeviceName );
 
     byte customConfig = false;
-    String plg = "";
-    customConfig = PluginCall(PLUGIN_WEBFORM_SHOW_CONFIG, &TempEvent, plg);
-    if (plg.length() > 0) {
+    String plgConfig = "";
+    customConfig = PluginCall(PLUGIN_WEBFORM_SHOW_CONFIG, &TempEvent, plgConfig);
+    if (plgConfig.length() > 0) {
         reply += comma;
-        reply += "\"pluginConfig\":\"" + plg + "\"";
+        reply += json_string( F("PluginConfig"), plgConfig );
     }
     if (!customConfig)
       if (Device[DeviceIndex].Ports != 0) {
         reply += comma;
-        reply += F("\"TaskDevicePort\":\"");
-        reply += Settings.TaskDevicePort[x];
-        reply += F("\"");
+        reply += json_string( F("TaskDevicePort"), String(Settings.TaskDevicePort[x]) );
       }
 
     if (Settings.TaskDeviceID[x] != 0) {
       reply += comma;
-      reply += F("\"TaskDeviceID\":\"");
-      reply += Settings.TaskDeviceID[x];
-      reply += F("\"");
+      reply += json_string( F("TaskDeviceID"), String(Settings.TaskDeviceID[x]) );
     }
 
     /////////////// PINS START
     if (Settings.TaskDeviceDataFeed[x] == 0) {
       reply += comma;
-      reply += F("\"pins\":[");
+      reply += F("\"DevicePins\":[");
       comma = "";
       if (Device[DeviceIndex].Type == DEVICE_TYPE_I2C)  {
         reply += comma;
@@ -815,7 +816,7 @@ void handle_devices_json() {
     customValues = PluginCall(PLUGIN_WEBFORM_SHOW_VALUES, &TempEvent, plgValues);
     if (plgValues.length() > 0) {
         reply += comma;
-        reply += "\"pluginCustomValues\":\"" + plgValues + "\"";
+        reply += json_string( F("PluginCustomValues"), plgValues );
     }
     if (!customValues)
     {
@@ -860,7 +861,7 @@ void handle_device_json() {
   // open json
   String reply = F("[");
   String comma = "{";
-
+/*
   String deviceName;
   byte DeviceIndex = 0;
 
@@ -870,7 +871,6 @@ void handle_device_json() {
   if (ExtraTaskSettings.TaskDeviceValueNames[0][0] == 0)
       PluginCall(PLUGIN_GET_DEVICEVALUENAMES, &TempEvent, dummyString);
 
-    reply += F("<BR><BR><form name='frmselect' method='post'><table><TH>Task Settings<TH>Value");
 
     reply += F("<TR><TD>Device:<TD>");
     addDeviceSelect(reply, "taskdevicenumber", Settings.TaskDeviceNumber[index - 1]);
@@ -986,7 +986,7 @@ void handle_device_json() {
 
     }
 
-
+*/
   // close json
   reply += F("]");
   // debug
