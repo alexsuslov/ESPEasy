@@ -15,6 +15,9 @@ void WebServerInit()
 
   // [get]/api/devices json
   WebServer.on("/api/devices", handle_devices_json);
+  // [get]/api/device?index=1 json
+  WebServer.on("/api/device", handle_device_json);
+
   WebServer.on("/devices", handle_devices);
   WebServer.on("/log", handle_log);
   WebServer.on("/tools", handle_tools);
@@ -701,10 +704,10 @@ void addPinStateSelect(String& str, String name,  int choice)
 }
 
 
+/////////////////////////////////////////////////////////////
 void handle_devices_json() {
   if (!isLoggedInApi()) return;
 
-/////////////////////////////////////////////////////////////
   char tmpString[41];
   struct EventStruct TempEvent;
 
@@ -812,28 +815,59 @@ void handle_devices_json() {
     customValues = PluginCall(PLUGIN_WEBFORM_SHOW_VALUES, &TempEvent, plgValues);
     if (plgValues.length() > 0) {
         reply += comma;
-        reply += "\"pluginValues\":\"" + plgValues + "\"";
+        reply += "\"pluginCustomValues\":\"" + plgValues + "\"";
     }
     if (!customValues)
     {
+      reply += F(",\"Tasks\":[");
       for (byte varNr = 0; varNr < VARS_PER_TASK; varNr++)
       {
         if ((Settings.TaskDeviceNumber[x] != 0) and (varNr < Device[DeviceIndex].ValueCount))
         {
-          reply += comma;
-          reply += F("\"TaskDeviceValueName\":\"");
+          if (varNr > 0) {
+            reply += comma;
+          }
+          reply += F("{\"TaskDeviceValueName\":\"");
           reply += ExtraTaskSettings.TaskDeviceValueNames[varNr];
           reply += F("\"");
           reply += comma;
           reply += F("\"TaskDeviceValue\":\"");
           reply += UserVar[x * VARS_PER_TASK + varNr];
-          reply += F("\"");
+          reply += F("\"}");
         }
       }
+      reply += "]";
     }
- //// second block
- /*
-    if (ExtraTaskSettings.TaskDeviceValueNames[0][0] == 0)
+    reply += "}";
+    comma = ",{";
+  }
+
+  // close json
+  reply += F("]");
+  // debug
+   Serial.println(reply);
+  // send to client
+  WebServer.send(200, F("application/json"), reply);
+
+}
+/////////////////////////////////////////////////////////////
+void handle_device_json() {
+  if (!isLoggedInApi()) return;
+
+  char tmpString[41];
+  struct EventStruct TempEvent;
+
+  // open json
+  String reply = F("[");
+  String comma = "{";
+
+  String deviceName;
+  byte DeviceIndex = 0;
+
+  String taskindex = WebServer.arg("index");
+
+
+  if (ExtraTaskSettings.TaskDeviceValueNames[0][0] == 0)
       PluginCall(PLUGIN_GET_DEVICEVALUENAMES, &TempEvent, dummyString);
 
     reply += F("<BR><BR><form name='frmselect' method='post'><table><TH>Task Settings<TH>Value");
@@ -951,13 +985,8 @@ void handle_devices_json() {
       }
 
     }
-///////////// second block end
-*/
-    reply += "}";
-    comma = ",{";
-  }
 
-/////////////////////////////////////////////////////////////
+
   // close json
   reply += F("]");
   // debug
@@ -966,8 +995,6 @@ void handle_devices_json() {
   WebServer.send(200, F("application/json"), reply);
 
 }
-
-
 //********************************************************************************
 // Web Interface device page
 //********************************************************************************
