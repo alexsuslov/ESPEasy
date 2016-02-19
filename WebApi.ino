@@ -10,6 +10,10 @@ String json_string(  String name, String value  ){
 String json_number(  String name, String value){
   return "\"" + name + "\"" + ":" +  value;
 }
+// return "name":value from name , value
+String json_number(  String name, int value){
+  return "\"" + name + "\"" + ":" +  value;
+}
 
 
 // return "name":{value} from name , value
@@ -338,25 +342,36 @@ void handle_api_devices_json() {
 
 /////////////////////////////////////////////////////////////
 void handle_api_device_json() {
-  if (!isLoggedInApi()) return;
-
-  char tmpString[41];
-  struct EventStruct TempEvent;
+  // if (!isLoggedInApi()) return;
 
   // open json
-  String reply = F("[");
-  String comma = "{";
-/*
-  String deviceName;
-  byte DeviceIndex = 0;
-
+  String reply = F("{");
+  struct EventStruct TempEvent;
   String taskindex = WebServer.arg("index");
+  byte index = taskindex.toInt();
 
 
   if (ExtraTaskSettings.TaskDeviceValueNames[0][0] == 0)
-      PluginCall(PLUGIN_GET_DEVICEVALUENAMES, &TempEvent, dummyString);
+
+    PluginCall(PLUGIN_GET_DEVICEVALUENAMES, &TempEvent, dummyString);
+
+    reply += json_number( "taskdevicenumber", String( Settings.TaskDeviceNumber[index]) );
+    reply += ", " + json_number("taskindex", taskindex );
+    reply +=  ", " + json_number("taskdeviceid", String(Settings.TaskDeviceID[index]) );
+    reply += ", " +  json_number("taskdevicepin1", Settings.TaskDevicePin1[index]) ;
+    reply += ", " + json_number("taskdevicepin2", Settings.TaskDevicePin2[index]) ;
+    reply += ", " + json_number("taskdevicepin3", Settings.TaskDevicePin3[index]) ;
+    reply += ", " + json_number("taskdevicepin1pullup", Settings.TaskDevicePin1PullUp[index]) ;
+    reply += ", " + json_number("taskdevicepin1inversed", Settings.TaskDevicePin1Inversed[index]) ;
+    reply += ", " + json_string("taskdevicepin1inversed", ExtraTaskSettings.TaskDeviceName) ;
+    reply += ", " + json_number("taskdeviceport", Settings.TaskDevicePort[index]) ;
+    reply += ", " + json_number("taskdevicesenddata", Settings.TaskDeviceSendData[index]) ;
+    reply += ", " + json_number("taskdeviceglobalsync", Settings.TaskDeviceGlobalSync[index]) ;
+    // reply += ", " + json_number("taskdeviceformula", Settings.TaskDevicePort[index]) ;
+    // reply += ", " + json_number("taskdevicevaluename", Settings.TaskDevicePort[index]) ;
 
 
+/*
     reply += F("<TR><TD>Device:<TD>");
     addDeviceSelect(reply, "taskdevicenumber", Settings.TaskDeviceNumber[index - 1]);
 
@@ -473,7 +488,7 @@ void handle_api_device_json() {
 
 */
   // close json
-  reply += F("]");
+  reply += F("}");
   // debug
    Serial.println(reply);
   // send to client
