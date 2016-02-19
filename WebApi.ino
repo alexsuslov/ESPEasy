@@ -342,12 +342,13 @@ void handle_api_devices_json() {
 
 /////////////////////////////////////////////////////////////
 void handle_api_device_json() {
-  // if (!isLoggedInApi()) return;
+  if (!isLoggedInApi()) return;
 
   // open json
   String reply = F("{");
   struct EventStruct TempEvent;
   String taskindex = WebServer.arg("index");
+
   byte index = taskindex.toInt();
 
 
@@ -357,7 +358,7 @@ void handle_api_device_json() {
 
     reply += json_number( "taskdevicenumber", String( Settings.TaskDeviceNumber[index]) );
     reply += ", " + json_number("taskindex", taskindex );
-    reply +=  ", " + json_number("taskdeviceid", String(Settings.TaskDeviceID[index]) );
+    reply += ", " + json_number("taskdeviceid", String(Settings.TaskDeviceID[index]) );
     reply += ", " +  json_number("taskdevicepin1", Settings.TaskDevicePin1[index]) ;
     reply += ", " + json_number("taskdevicepin2", Settings.TaskDevicePin2[index]) ;
     reply += ", " + json_number("taskdevicepin3", Settings.TaskDevicePin3[index]) ;

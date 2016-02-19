@@ -1736,12 +1736,9 @@ boolean isLoggedInApi(){
   if (SecuritySettings.Password[0] == 0)
     WebLoggedIn = true;
 
-  if (!WebLoggedIn)
-  {
+  if (!WebLoggedIn) {
     WebServer.send(401);
-  }
-  else
-  {
+  } else {
     WebLoggedInTimer = 0;
   }
 
