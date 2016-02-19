@@ -519,8 +519,7 @@ void hardware_save() {
   String pin_i2c_sda = WebServer.arg("psda");
   String pin_i2c_scl = WebServer.arg("pscl");
 
-  if (pin_i2c_sda.length() != 0)
-  {
+  if (pin_i2c_sda.length() != 0) {
     Settings.Pin_i2c_sda     = pin_i2c_sda.toInt();
     Settings.Pin_i2c_scl     = pin_i2c_scl.toInt();
     Settings.PinStates[0] =  WebServer.arg("p0").toInt();

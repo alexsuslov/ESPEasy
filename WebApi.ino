@@ -146,6 +146,7 @@ void handle_api_config_json() {
 //********************************************************************************
 
 void handle_api_config_post() {
+
   post_config_save();
   handle_api_config_json();
 }
@@ -169,8 +170,8 @@ void handle_api_hardware_json() {
   // open json
   String reply = F("{");
 
-  reply += json_string( F("Pin_i2c_sda"), String(Settings.Pin_i2c_sda) );
-  reply += "," + json_string( F("Pin_i2c_scl"), String(Settings.Pin_i2c_scl) );
+  reply += json_string( F("psda"), String(Settings.Pin_i2c_sda) );
+  reply += "," + json_string( F("pscl"), String(Settings.Pin_i2c_scl) );
   for (byte x=0; x < 17; x++){
     reply += "," + json_string( "p" + String(x), String(Settings.PinStates[x]) );
   }
