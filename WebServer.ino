@@ -13,9 +13,7 @@ void WebServerInit()
   WebServer.on( "/api/hardware", HTTP_POST, handle_api_hardware_post);
   WebServer.on( "/api/hardware", HTTP_OPTIONS, handle_api_config_options);
   // [get]/api/devices json
-  WebServer.on( "/api/devices", HTTP_GET,handle_api_devices_json);
-  WebServer.on( "/api/devices", HTTP_OPTIONS, handle_api_config_options);
-  // WebServer.on( "/api/devices", HTTP_POST,handle_api_devices_post);
+  WebServer.on( "/api/devices", HTTP_GET, handle_api_devices_json);
   // [get]/api/device?index=1 json
   WebServer.on( "/api/device", HTTP_GET, handle_api_device_json);
   WebServer.on( "/api/device", HTTP_OPTIONS, handle_api_config_options);
