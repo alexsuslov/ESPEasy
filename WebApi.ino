@@ -144,9 +144,18 @@ void handle_api_config_json() {
 // save config
 // @return [json] config
 //********************************************************************************
+
 void handle_api_config_post() {
   post_config_save();
   handle_api_config_json();
+}
+
+// const char option_response[] PROGMEM = "GET,HEAD,POST\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept\r\nAccess-Control-Allow-Methods: GET, POST\r\n";
+
+const char option_response[] PROGMEM = "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: POST, GET, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, X-Requested-With\r\nAccess-Control-Max-Age: 2048\r\nVary: Accept-Encoding, Origin\r\nContent-Encoding: gzip\r\nContent-Length: 0\r\nKeep-Alive: timeout=2, max=100\r\nConnection: Keep-Alive\r\nContent-Type: text/plain\r\n";
+
+void handle_api_config_options() {
+  WebServer.sendContent_P(option_response);
 }
 
 

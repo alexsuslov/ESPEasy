@@ -7,14 +7,18 @@ void WebServerInit()
   // [get]/api/config
   WebServer.on( "/api/config", HTTP_GET, handle_api_config_json);
   WebServer.on( "/api/config", HTTP_POST, handle_api_config_post);
+  WebServer.on( "/api/config", HTTP_OPTIONS, handle_api_config_options);
   // [get]/api/hardware json
   WebServer.on( "/api/hardware", HTTP_GET, handle_api_hardware_json);
   WebServer.on( "/api/hardware", HTTP_POST, handle_api_hardware_post);
+  WebServer.on( "/api/hardware", HTTP_OPTIONS, handle_api_config_options);
   // [get]/api/devices json
   WebServer.on( "/api/devices", HTTP_GET,handle_api_devices_json);
+  WebServer.on( "/api/devices", HTTP_OPTIONS, handle_api_config_options);
   // WebServer.on( "/api/devices", HTTP_POST,handle_api_devices_post);
   // [get]/api/device?index=1 json
   WebServer.on( "/api/device", HTTP_GET, handle_api_device_json);
+  WebServer.on( "/api/device", HTTP_OPTIONS, handle_api_config_options);
   // WebServer.on( "/api/device", HTTP_POST, handle_device_json);
   // [get]/api/hardware json
   WebServer.on( "/api/wifiscanner", HTTP_GET, handle_api_wifiscanner_json);
