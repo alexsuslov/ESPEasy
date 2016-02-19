@@ -16,10 +16,12 @@ void WebServerInit()
   WebServer.on( "/api/devices", HTTP_GET, handle_api_devices_json);
   // [get]/api/device?index=1 json
   WebServer.on( "/api/device", HTTP_GET, handle_api_device_json);
+  WebServer.on( "/api/device", HTTP_POST, handle_api_device_json);
   WebServer.on( "/api/device", HTTP_OPTIONS, handle_api_config_options);
-  // WebServer.on( "/api/device", HTTP_POST, handle_device_json);
   // [get]/api/hardware json
   WebServer.on( "/api/wifiscanner", HTTP_GET, handle_api_wifiscanner_json);
+  // [get]/api json
+  WebServer.on( "/api", HTTP_GET, handle_api_root);
 
   // Prepare webserver pages
   WebServer.on( "/", handle_root);
