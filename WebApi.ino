@@ -1,12 +1,34 @@
 // @auth Alex Suslov <suslov@me.com>
 // @auth Victor Brutskiy <4refr0nt@gmail.com>
 
-// return "name":"value" from name, value
+// !!! delete in production
+void Serial_var( String name, String var){
+  Serial.print(name + ": ");
+  Serial.println(var);
+}
+
+
+// content types in flash
+const char text_plain [] PROGMEM = "text/plain";
+const char text_html [] PROGMEM = "text/html";
+const char text_css [] PROGMEM = "text/css";
+// js
+const char application_json [] PROGMEM = "application/json";
+const char application_javascript [] PROGMEM = "application/javascript";
+const char application_stream [] PROGMEM = "application/octet-stream";
+// img
+const char image_png [] PROGMEM = "image/png";
+const char image_gif [] PROGMEM = "image/gif";
+const char image_jpeg [] PROGMEM = "image/jpeg";
+const char image_icon [] PROGMEM = "image/x-icon";
+
+
+// @return "name":"value" from name, value
 String json_string(  String name, String value  ) {
   return "\"" + name + "\"" + ":" + "\"" + value + "\"";
 }
 
-// return "name":value from name, value
+// @return "name":value from name, value
 String json_number(  String name, String value) {
   return "\"" + name + "\"" + ":" +  value;
 }
@@ -15,12 +37,12 @@ String json_number(  String name, int value) {
   return "\"" + name + "\"" + ":" +  value;
 }
 
-// return "name":{value} from name, value
+// @return "name":{value} from name, value
 String json_object(  String name, String value) {
   return "\"" + name + "\"" + ":{" + value + "}";
 }
 
-// return "name":[values] from name, values
+// @return "name":[values] from name, values
 String json_array(  String name, String values)  {
   return "\"" + name + "\"" + ":[" + values + "]";
 }
@@ -52,7 +74,7 @@ void handle_api_wifiscanner_json() {
   // close json
   reply += F("}\n");
   // send to client
-  WebServer.send(200, F("application/json"), reply);
+  WebServer.send(200, FPSTR(application_json), reply);
 
 }
 
@@ -137,7 +159,7 @@ void handle_api_config_json() {
   reply += F("}\n");
 
   // debug
-  WebServer.send(200, F("application/json"), reply);
+  WebServer.send(200, FPSTR(application_json), reply);
 }
 
 
@@ -184,7 +206,7 @@ void handle_api_hardware_json() {
   // debug
   // Serial.println(reply);
   // send to client
-  WebServer.send(200, F("application/json"), reply);
+  WebServer.send(200, FPSTR(application_json), reply);
 }
 
 //********************************************************************************
@@ -334,7 +356,7 @@ void handle_api_devices_json() {
   // debug
   Serial.println(reply);
   // send to client
-  WebServer.send(200, F("application/json"), reply);
+  WebServer.send(200, FPSTR(application_json), reply);
 
 }
 
@@ -366,132 +388,12 @@ void handle_api_device_json() {
   reply += ", " + json_number("taskdeviceport", Settings.TaskDevicePort[index]) ;
   reply += ", " + json_number("taskdevicesenddata", Settings.TaskDeviceSendData[index]) ;
   reply += ", " + json_number("taskdeviceglobalsync", Settings.TaskDeviceGlobalSync[index]) ;
-  // reply += ", " + json_number("taskdeviceformula", Settings.TaskDevicePort[index]) ;
-  // reply += ", " + json_number("taskdevicevaluename", Settings.TaskDevicePort[index]) ;
-
-
-  /*
-      reply += F("<TR><TD>Device:<TD>");
-      addDeviceSelect(reply, "taskdevicenumber", Settings.TaskDeviceNumber[index - 1]);
-
-      if (Settings.TaskDeviceNumber[index - 1] != 0 )
-      {
-        reply += F("<a class=\"button-link\" href=\"http://www.esp8266.nu/index.php/plugin");
-        reply += Settings.TaskDeviceNumber[index - 1];
-        reply += F("\" target=\"_blank\">?</a>");
-
-        reply += F("<TR><TD>Name:<TD><input type='text' maxlength='25' name='taskdevicename' value='");
-        reply += ExtraTaskSettings.TaskDeviceName;
-        reply += F("'>");
-
-
-        if (!Device[DeviceIndex].Custom)
-        {
-          reply += F("<TR><TD>IDX / Var:<TD><input type='text' name='taskdeviceid' value='");
-          reply += Settings.TaskDeviceID[index - 1];
-          reply += F("'>");
-        }
-
-        if (!Device[DeviceIndex].Custom && Settings.TaskDeviceDataFeed[index - 1] == 0)
-        {
-          if (Device[DeviceIndex].Ports != 0)
-          {
-            reply += F("<TR><TD>Port:<TD><input type='text' name='taskdeviceport' value='");
-            reply += Settings.TaskDevicePort[index - 1];
-            reply += F("'>");
-          }
-
-          if (Device[DeviceIndex].Type == DEVICE_TYPE_SINGLE || Device[DeviceIndex].Type == DEVICE_TYPE_DUAL)
-          {
-            reply += F("<TR><TD>1st GPIO:<TD>");
-            addPinSelect(false, reply, "taskdevicepin1", Settings.TaskDevicePin1[index - 1]);
-          }
-          if (Device[DeviceIndex].Type == DEVICE_TYPE_DUAL)
-          {
-            reply += F("<TR><TD>2nd GPIO:<TD>");
-            addPinSelect(false, reply, "taskdevicepin2", Settings.TaskDevicePin2[index - 1]);
-          }
-
-          if (Device[DeviceIndex].PullUpOption)
-          {
-            reply += F("<TR><TD>Pull UP:<TD>");
-            if (Settings.TaskDevicePin1PullUp[index - 1])
-              reply += F("<input type=checkbox name=taskdevicepin1pullup checked>");
-            else
-              reply += F("<input type=checkbox name=taskdevicepin1pullup>");
-          }
-
-          if (Device[DeviceIndex].InverseLogicOption)
-          {
-            reply += F("<TR><TD>Inversed:<TD>");
-            if (Settings.TaskDevicePin1Inversed[index - 1])
-              reply += F("<input type=checkbox name=taskdevicepin1inversed checked>");
-            else
-              reply += F("<input type=checkbox name=taskdevicepin1inversed>");
-          }
-        }
-
-        PluginCall(PLUGIN_WEBFORM_LOAD, &TempEvent, reply);
-
-        if (Device[DeviceIndex].SendDataOption)
-        {
-          reply += F("<TR><TD>Send Data:<TD>");
-          if (Settings.TaskDeviceSendData[index - 1])
-            reply += F("<input type=checkbox name=taskdevicesenddata checked>");
-          else
-            reply += F("<input type=checkbox name=taskdevicesenddata>");
-        }
-
-        if (Device[DeviceIndex].GlobalSyncOption && Settings.TaskDeviceDataFeed[index - 1] == 0 && Settings.UDPPort != 0)
-        {
-          reply += F("<TR><TD>Global Sync:<TD>");
-          if (Settings.TaskDeviceGlobalSync[index - 1])
-            reply += F("<input type=checkbox name=taskdeviceglobalsync checked>");
-          else
-            reply += F("<input type=checkbox name=taskdeviceglobalsync>");
-        }
-
-        if (!Device[DeviceIndex].Custom)
-        {
-          reply += F("<TR><TH>Optional Settings<TH>Value");
-
-          if (Device[DeviceIndex].FormulaOption)
-          {
-            for (byte varNr = 0; varNr < Device[DeviceIndex].ValueCount; varNr++)
-            {
-              reply += F("<TR><TD>Formula ");
-              reply += ExtraTaskSettings.TaskDeviceValueNames[varNr];
-              reply += F(":<TD><input type='text' maxlength='25' name='taskdeviceformula");
-              reply += varNr + 1;
-              reply += F("' value='");
-              reply += ExtraTaskSettings.TaskDeviceFormula[varNr];
-              reply += F("'>");
-              if (varNr == 0)
-                reply += F("<a class=\"button-link\" href=\"http://www.esp8266.nu/index.php/EasyFormula\" target=\"_blank\">?</a>");
-            }
-          }
-
-          for (byte varNr = 0; varNr < Device[DeviceIndex].ValueCount; varNr++)
-          {
-            reply += F("<TR><TD>Value Name ");
-            reply += varNr + 1;
-            reply += F(":<TD><input type='text' maxlength='25' name='taskdevicevaluename");
-            reply += varNr + 1;
-            reply += F("' value='");
-            reply += ExtraTaskSettings.TaskDeviceValueNames[varNr];
-            reply += F("'>");
-          }
-        }
-
-      }
-
-  */
   // close json
   reply += F("}");
   // debug
   Serial.println(reply);
   // send to client
-  WebServer.send(200, F("application/json"), reply);
+  WebServer.send(200, FPSTR(application_json), reply);
 
 }
 //********************************************************************************
@@ -514,18 +416,17 @@ void handle_api_device_json() {
 //    NodeList: [ ]
 // }
 //********************************************************************************
-void handle_api_root() {
-  if (!isLoggedInApi()) return;
 
+String json_esp_summary() {
   // open json
   String reply = F("{");
-  String comma = ",";
+  String comma;
 
   reply += json_string( F("Name"), Settings.Name );
 
   int freeMem = ESP.getFreeHeap();
-  reply += comma;
-  reply += json_number( F("FreeMem"), freeMem );
+
+  reply += "," + json_number( F("FreeMem"), freeMem );
 
 
 #if FEATURE_TIME
@@ -535,58 +436,35 @@ void handle_api_root() {
     if (minute() < 10)
       time += "0";
     time += minute();
-    reply += comma;
-    reply += json_string( F("Time"), time );
+    reply += "," + json_string( F("Time"), time );
   }
 #endif
 
-  reply += comma;
-  reply += json_number( F("Uptime"), wdcounter / 2);
-
+  reply += "," + json_number( F("Uptime"), wdcounter / 2);
   IPAddress ip = WiFi.localIP();
   char str[20];
   sprintf_P(str, PSTR("%u.%u.%u.%u"), ip[0], ip[1], ip[2], ip[3]);
-  reply += comma;
-  reply += json_string( F("IP"), str);
-
+  reply += "," + json_string( F("IP"), str);
   IPAddress gw = WiFi.gatewayIP();
   sprintf_P(str, PSTR("%u.%u.%u.%u"), gw[0], gw[1], gw[2], gw[3]);
-  reply += comma;
-  reply += json_string( F("Gateway"), str);
-
-  reply += comma;
-  reply += json_string( F("Build"), String(BUILD));
-
-  reply += comma;
-  reply += json_string( F("Unit"), String(Settings.Unit));
+  reply += "," + json_string( F("Gateway"), str);
+  reply += "," + json_string( F("Build"), String(BUILD));
+  reply += "," + json_string( F("Unit"), String(Settings.Unit));
 
   uint8_t mac[] = {0, 0, 0, 0, 0, 0};
   uint8_t* macread = WiFi.macAddress(mac);
   char macaddress[20];
   sprintf_P(macaddress, PSTR("%02x:%02x:%02x:%02x:%02x:%02x"), macread[0], macread[1], macread[2], macread[3], macread[4], macread[5]);
-
-  reply += comma;
-  reply += json_string( F("STA_MAC"), macaddress);
-
+  reply += "," + json_string( F("STA_MAC"), macaddress);
   macread = WiFi.softAPmacAddress(mac);
   sprintf_P(macaddress, PSTR("%02x:%02x:%02x:%02x:%02x:%02x"), macread[0], macread[1], macread[2], macread[3], macread[4], macread[5]);
-  reply += comma;
-  reply += json_string( F("AP_MAC"), macaddress);
-
-  reply += comma;
-  reply += json_string( F("Chip_id"), String(ESP.getChipId()));
-
-  reply += comma;
-  reply += json_string( F("Flash_Chip_id"), String(ESP.getFlashChipId()));
-
-  reply += comma;
-  reply += json_string( F("Flash_Size"), String(ESP.getFlashChipRealSize()));
-
-  reply += comma;
-  reply += json_number( F("Boot_cause"), lastBootCause );
-
-  reply += comma;
-  reply += F("\"NodeList\":[");
+  reply += "," + json_string( F("AP_MAC"), macaddress);
+  reply += "," + json_string( F("Chip_id"), String(ESP.getChipId()));
+  reply += "," + json_string( F("Flash_Chip_id"), String(ESP.getFlashChipId()));
+  reply += "," + json_string( F("Flash_Size"), String(ESP.getFlashChipRealSize()));
+  reply += "," + json_number( F("Boot_cause"), lastBootCause );
+  reply += "," ;
+  reply += + F("\"NodeList\":[");
   comma  = F("{");
   for (byte x = 0; x < UNIT_MAX; x++)  {
     if (Nodes[x].ip[0] != 0)    {
@@ -606,8 +484,39 @@ void handle_api_root() {
 
   // close json
   reply += F("]}");
-  // debug
-  Serial.println(reply);
-  // send to client
-  WebServer.send(200, F("application/json"), reply);
+  return reply;
+}
+
+void handle_api_root() {
+  // if (!isLoggedInApi()) return;
+  WebServer.send(200, FPSTR(application_json), json_esp_summary());
+}
+
+
+//********************************************************************************
+// Auth api
+//********************************************************************************
+void handle_auth_api() {
+  // check is password unset -> cancel auth
+  if (SecuritySettings.Password[0] == 0){
+    handle_api_root();
+    return;
+  }
+
+  String webrequest = WebServer.arg("password");
+
+  char command[80];
+  webrequest.toCharArray(command, 80);
+
+  if (webrequest.length() != 0) {
+    // compare with stored password and set timer if there's a match
+    if ( strcasecmp( command, SecuritySettings.Password ) == 0 ) {
+
+      WebLoggedIn = true;
+      WebLoggedInTimer = 0;
+      handle_api_root();
+      return;
+    }
+  }
+  WebServer.send( 401, FPSTR(text_plain), "fail");
 }

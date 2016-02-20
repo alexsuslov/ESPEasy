@@ -20,8 +20,13 @@ void WebServerInit()
   WebServer.on( "/api/device", HTTP_OPTIONS, handle_api_config_options);
   // [get]/api/hardware json
   WebServer.on( "/api/wifiscanner", HTTP_GET, handle_api_wifiscanner_json);
+
   // [get]/api json
   WebServer.on( "/api", HTTP_GET, handle_api_root);
+  // [get]/api/auth
+  // @return status 204 || 401
+  WebServer.on( "/api/auth", HTTP_OPTIONS, handle_api_config_options);
+  WebServer.on( "/api/auth", HTTP_POST, handle_auth_api);
 
   // Prepare webserver pages
   WebServer.on( "/", handle_root);
@@ -51,6 +56,7 @@ void WebServerInit()
     httpUpdater.setup(&WebServer);
 
   WebServer.begin();
+  Serial.println(F("WebServer Start"));
 }
 
 
@@ -145,7 +151,7 @@ void handle_root() {
   // if Wifi setup, launch setup wizard
   if (wifiSetup)
   {
-    WebServer.send(200, "text/html", "<meta HTTP-EQUIV='REFRESH' content='0; url=http://192.168.4.1/setup'>");
+    WebServer.send(200, FPSTR(text_html), "<meta HTTP-EQUIV='REFRESH' content='0; url=http://192.168.4.1/setup'>");
     //WebServer.send(200, "text/html", "<a class=\"button-menu\" href=\"setup\">Setup</a>");
     return;
   }
@@ -262,7 +268,7 @@ void handle_root() {
 
     reply += F("</table></form>");
     addFooter(reply);
-    WebServer.send(200, "text/html", reply);
+    WebServer.send(200, FPSTR(text_html), reply);
     printWebString = "";
     printToWeb = false;
   }
@@ -285,7 +291,7 @@ void handle_root() {
       cmd_within_mainloop = CMD_REBOOT;
     }
 
-    WebServer.send(200, "text/html", "OK");
+    WebServer.send(200, FPSTR(text_html), "OK");
   }
 }
 
@@ -508,7 +514,7 @@ void handle_config() {
   reply += F("'><TR><TD><TD><input class=\"button-link\" type='submit' value='Submit'>");
   reply += F("</table></form>");
   addFooter(reply);
-  WebServer.send(200, "text/html", reply);
+  WebServer.send(200, FPSTR(text_html), reply);
 }
 
 
@@ -582,7 +588,7 @@ void handle_hardware() {
 
   reply += F("</table></form>");
   addFooter(reply);
-  WebServer.send(200, "text/html", reply);
+  WebServer.send(200, FPSTR(text_html), reply);
 }
 
 
@@ -993,7 +999,7 @@ void handle_devices() {
   }
 
   addFooter(reply);
-  WebServer.send(200, "text/html", reply);
+  WebServer.send(200, FPSTR(text_html), reply);
 }
 
 
@@ -1267,7 +1273,7 @@ void handle_log() {
   }
   reply += F("</table>");
   addFooter(reply);
-  WebServer.send(200, "text/html", reply);
+  WebServer.send(200, FPSTR(text_html), reply);
   free(TempString);
 }
 
@@ -1319,7 +1325,7 @@ void handle_tools() {
   reply += printWebString;
   reply += F("</table></form>");
   addFooter(reply);
-  WebServer.send(200, "text/html", reply);
+  WebServer.send(200, FPSTR(text_html), reply);
   printWebString = "";
   printToWeb = false;
 }
@@ -1402,7 +1408,7 @@ void handle_i2cscanner() {
 
   reply += F("</table>");
   addFooter(reply);
-  WebServer.send(200, "text/html", reply);
+  WebServer.send(200, FPSTR(text_html), reply);
   free(TempString);
 }
 
@@ -1436,10 +1442,9 @@ void handle_wifiscanner() {
 
   reply += F("</table>");
   addFooter(reply);
-  WebServer.send(200, "text/html", reply);
+  WebServer.send(200, FPSTR(text_html), reply);
   free(TempString);
 }
-
 
 //********************************************************************************
 // Web Interface login page
@@ -1474,7 +1479,7 @@ void handle_login() {
     }
   }
 
-  WebServer.send(200, "text/html", reply);
+  WebServer.send(200, FPSTR(text_html), reply);
   printWebString = "";
   printToWeb = false;
 }
@@ -1511,7 +1516,7 @@ void handle_control() {
 
   reply += printWebString;
   reply += F("</table></form>");
-  WebServer.send(200, "text/html", reply);
+  WebServer.send(200, FPSTR(text_html), reply);
   printWebString = "";
   printToWeb = false;
 }
@@ -1591,7 +1596,7 @@ boolean handle_json()
   if (taskNr == 0 )
     reply += F("]}\n");
 
-  WebServer.send(200, "application/json", reply);
+  WebServer.send(200, FPSTR(application_json), reply);
 }
 
 
@@ -1730,7 +1735,7 @@ void handle_advanced() {
   reply += F("<input type='hidden' name='edit' value='1'>");
   reply += F("</table></form>");
   addFooter(reply);
-  WebServer.send(200, "text/html", reply);
+  WebServer.send(200, FPSTR(text_html), reply);
 }
 
 // api version is Logged In
@@ -1816,7 +1821,7 @@ void handle_upload() {
 
   reply += F("<form enctype=\"multipart/form-data\" method=\"post\"><p>Upload settings file:<br><input type=\"file\" name=\"datafile\" size=\"40\"></p><div><input class=\"button-link\" type='submit' value='Upload'></div><input type='hidden' name='edit' value='1'></form>");
   addFooter(reply);
-  WebServer.send(200, "text/html", reply);
+  WebServer.send(200, FPSTR(text_html), reply);
   printWebString = "";
   printToWeb = false;
 }
@@ -1905,18 +1910,18 @@ void handleFileUpload() {
 bool loadFromSPIFFS(String path) {
   if (!isLoggedIn()) return false;
 
-  String dataType = F("text/plain");
+  String dataType = text_plain;
   if (path.endsWith("/")) path += "index.htm";
 
   if (path.endsWith(".src")) path = path.substring(0, path.lastIndexOf("."));
-  else if (path.endsWith(".htm")) dataType = F("text/html");
-  else if (path.endsWith(".css")) dataType = F("text/css");
-  else if (path.endsWith(".js")) dataType = F("application/javascript");
-  else if (path.endsWith(".png")) dataType = F("image/png");
-  else if (path.endsWith(".gif")) dataType = F("image/gif");
-  else if (path.endsWith(".jpg")) dataType = F("image/jpeg");
-  else if (path.endsWith(".ico")) dataType = F("image/x-icon");
-  else if (path.endsWith(".txt")) dataType = F("application/octet-stream");
+  else if (path.endsWith(".htm")) dataType = text_html;
+  else if (path.endsWith(".css")) dataType = text_css;
+  else if (path.endsWith(".js")) dataType = application_javascript;
+  else if (path.endsWith(".png")) dataType = image_png;
+  else if (path.endsWith(".gif")) dataType = image_gif;
+  else if (path.endsWith(".jpg")) dataType = image_jpg;
+  else if (path.endsWith(".ico")) dataType = image_icon;
+  else if (path.endsWith(".txt")) dataType = application_stream;
 
   path = path.substring(1);
   File dataFile = SPIFFS.open(path.c_str(), "r");
@@ -1971,7 +1976,7 @@ void handle_filelist() {
   }
   reply += F("</table></form>");
   addFooter(reply);
-  WebServer.send(200, "text/html", reply);
+  WebServer.send(200, FPSTR(text_html), reply);
 }
 
 #else
@@ -2003,7 +2008,7 @@ void handle_download() {
   */
   WebServer.setContentLength(32768);
   WebServer.sendHeader("Content-Disposition", "attachment; filename=config.txt");
-  WebServer.send(200, "application/octet-stream", "");
+  WebServer.send(200, FPSTR(application_stream), "");
 
   for (uint32_t _sector = _sectorStart; _sector < _sectorEnd; _sector++)
   {
@@ -2043,7 +2048,7 @@ void handle_css() {
     }
   WiFiClient client = WebServer.client();
   WebServer.setContentLength(size);
-  WebServer.send(200, "text/css", "");
+  WebServer.send(200,  FPSTR(text_css), "");
   client.write((const char*)data, size);
   delete [] data;
 }
@@ -2059,7 +2064,7 @@ void handle_upload() {
   addHeader(true, reply);
   reply += F("<form enctype=\"multipart/form-data\" method=\"post\"><p>Upload settings:<br><input type=\"file\" name=\"datafile\" size=\"40\"></p><div><input class=\"button-link\" type='submit' value='Upload'></div></form>");
   addFooter(reply);
-  WebServer.send(200, "text/html", reply);
+  WebServer.send(200, FPSTR(text_html), reply);
   printWebString = "";
   printToWeb = false;
 }
@@ -2074,7 +2079,7 @@ void handle_upload_post() {
   addHeader(true, reply);
   reply += F("Upload finished");
   addFooter(reply);
-  WebServer.send(200, "text/html", reply);
+  WebServer.send(200, FPSTR(text_html), reply);
   printWebString = "";
   printToWeb = false;
 }
@@ -2162,7 +2167,7 @@ void handleNotFound() {
 
   if (wifiSetup)
   {
-    WebServer.send(200, "text/html", "<meta HTTP-EQUIV='REFRESH' content='0; url=http://192.168.4.1/setup'>");
+    WebServer.send(200, FPSTR(text_html), "<meta HTTP-EQUIV='REFRESH' content='0; url=http://192.168.4.1/setup'>");
     //WebServer.send(200, "text/html", "<a class=\"button-menu\" href=\"setup\">Setup</a>");
     return;
   }
@@ -2181,7 +2186,7 @@ void handleNotFound() {
   for (uint8_t i = 0; i < WebServer.args(); i++) {
     message += " NAME:" + WebServer.argName(i) + "\n VALUE:" + WebServer.arg(i) + "\n";
   }
-  WebServer.send(404, "text/plain", message);
+  WebServer.send(404, text_plain, message);
 }
 
 
@@ -2206,7 +2211,7 @@ void handle_setup() {
     reply += host;
     reply += F("/config'>Proceed to main config</a>");
     addFooter(reply);
-    WebServer.send(200, "text/html", reply);
+    WebServer.send(200, FPSTR(text_html), reply);
     wifiSetup = false;
     WifiAPMode(false);
     return;
@@ -2308,7 +2313,7 @@ void handle_setup() {
 
   reply += F("</form>");
   addFooter(reply);
-  WebServer.send(200, "text/html", reply);
+  WebServer.send(200, FPSTR(text_html), reply);
   delay(10);
 }
 
