@@ -493,9 +493,9 @@ void handle_api_root() {
 }
 
 
-//********************************************************************************
+//*****************************************************************************
 // Auth api
-//********************************************************************************
+//*****************************************************************************
 void handle_auth_api() {
   // check is password unset -> cancel auth
   if (SecuritySettings.Password[0] == 0){
@@ -519,4 +519,27 @@ void handle_auth_api() {
     }
   }
   WebServer.send( 401, FPSTR(text_plain), "fail");
+}
+
+
+//*****************************************************************************
+// Log api
+//*****************************************************************************
+void handle_api_log() {
+  if (!isLoggedInApi()) return;
+
+  byte counter = 9;
+  String reply = "[";
+  bool comma = false;
+  Serial_var( "counter:", String(counter) );
+  while (counter >=0){
+    if (Logging[counter].timeStamp > 0){
+      Serial_var( "timeStamp:", String(Logging[counter].timeStamp) );
+      Serial_var( "Message:", String(Logging[counter].Message) );
+  }
+    counter --;
+  }
+
+  WebServer.send(200, FPSTR(application_json), "{\"test\":1}" );
+
 }
