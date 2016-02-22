@@ -64,7 +64,9 @@ void handle_api_wifiscanner_json() {
   } else {
     for (int i = 0; i < n; ++i) {
       if (i > 0) reply += comma;
-      reply = reply + F("{\"SSID\":\"") + WiFi.SSID(i) + F("\",\"RSSI\":\"") +  String( WiFi.RSSI(i) ) + F("\"}");
+      String ssid = String( WiFi.SSID(i) );
+      if ( ssid.indexOf("\"") > 0 ) ssid.replace(F("\""),F("<!!!>")); // if <"> symbol in SSID
+      reply = reply + F("{\"SSID\":\"") + ssid + F("\",\"RSSI\":\"") +  String( WiFi.RSSI(i) ) + F("\"}");
     }
   }
   // close json
@@ -73,8 +75,6 @@ void handle_api_wifiscanner_json() {
   WebServer.send(200, FPSTR(application_json), reply);
 
 }
-
-
 
 //********************************************************************************
 // API [GET] config
@@ -164,11 +164,22 @@ void handle_api_config_json() {
 // save config
 // @return [json] config
 //********************************************************************************
-
 void handle_api_config_post() {
 
-  post_config_save();
+  post_config_save_no_pass(); // password will be not save
   handle_api_config_json();
+}
+
+//********************************************************************************
+// API [POST] password
+// save password
+// @return null
+//********************************************************************************
+void handle_api_pass_post() {
+
+  String password = WebServer.arg("password");
+  strncpy(SecuritySettings.Password, password.c_str(), sizeof(SecuritySettings.Password));
+
 }
 
 // const char option_response[] PROGMEM = "GET,HEAD,POST\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept\r\nAccess-Control-Allow-Methods: GET, POST\r\n";
@@ -178,7 +189,6 @@ const char option_response[] PROGMEM = "HTTP/1.1 200 OK\r\nAccess-Control-Allow-
 void handle_api_config_options() {
   WebServer.sendContent_P(option_response);
 }
-
 
 //********************************************************************************
 // api [GET] hardware json

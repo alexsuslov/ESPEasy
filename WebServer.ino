@@ -7,6 +7,7 @@ const char api_device       [] = "/api/device";
 const char api_wifiscanner  [] = "/api/wifiscanner";
 const char api_auth         [] = "/api/auth";
 const char api_log          [] = "/api/log";
+const char api_pass         [] = "/api/pass";
 
 //********************************************************************************
 // Web Interface init
@@ -40,6 +41,8 @@ void WebServerInit()
   // [get]/api/log
   WebServer.on( api_log, HTTP_OPTIONS, handle_api_config_options);
   WebServer.on( api_log, HTTP_GET, handle_api_log);
+  // [get]/api/log
+  WebServer.on( api_log, HTTP_POST, handle_api_pass_post);
 
   // Prepare webserver pages
   WebServer.on( "/", handle_root);
@@ -309,16 +312,29 @@ void handle_root() {
 }
 
 //********************************************************************************
-// Save [POST] body -> SecuritySettings, Settings
-// use by handle_config(back compatible)
-// use by handle_api_config_post
+// Save [POST] body -> password and save other by calling post_config_save_no_pass
+// used by handle_config(back compatible)
+// used by handle_api_config_post
 //********************************************************************************
 void post_config_save() {
+  if (!isLoggedInApi()) return;
+
+  String ssid = WebServer.arg("ssid");
+  if (ssid[0] != 0)  {
+    String password = WebServer.arg("password");
+    strncpy(SecuritySettings.Password, password.c_str(), sizeof(SecuritySettings.Password));
+  }
+  post_config_save_no_pass();
+}
+//********************************************************************************
+// Save [POST] body -> SecuritySettings, Settings
+// used by post_config_save
+//********************************************************************************
+void post_config_save_no_pass() {
   if (!isLoggedInApi()) return;
     char tmpString[64];
 
   String name = WebServer.arg("name");
-  String password = WebServer.arg("password");
   String ssid = WebServer.arg("ssid");
   String key = WebServer.arg("key");
   String usedns = WebServer.arg("usedns");
@@ -340,7 +356,6 @@ void post_config_save() {
   if (ssid[0] != 0)
   {
     strncpy(Settings.Name, name.c_str(), sizeof(Settings.Name));
-    strncpy(SecuritySettings.Password, password.c_str(), sizeof(SecuritySettings.Password));
     strncpy(SecuritySettings.WifiSSID, ssid.c_str(), sizeof(SecuritySettings.WifiSSID));
     strncpy(SecuritySettings.WifiKey, key.c_str(), sizeof(SecuritySettings.WifiKey));
     strncpy(SecuritySettings.WifiAPKey, apkey.c_str(), sizeof(SecuritySettings.WifiAPKey));
