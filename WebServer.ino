@@ -1,11 +1,12 @@
 // urls
-const char api_hardware     [] = "/api/hardware";
-const char api_config       [] = "/api/config";
-const char api_devices      [] = "/api/devices";
-const char api_device       [] = "/api/device";
-const char api_wifiscanner  [] = "/api/wifiscanner";
-const char api_auth         [] = "/api/auth";
-const char api_log          [] = "/api/log";
+const char api_root         [] PROGMEM = "/api";
+const char api_hardware     [] PROGMEM = "/api/hardware";
+const char api_config       [] PROGMEM = "/api/config";
+const char api_devices      [] PROGMEM = "/api/devices";
+const char api_device       [] PROGMEM = "/api/device";
+const char api_wifiscanner  [] PROGMEM = "/api/wifiscanner";
+const char api_auth         [] PROGMEM = "/api/auth";
+const char api_log          [] PROGMEM = "/api/log";
 
 //********************************************************************************
 // Web Interface init
@@ -31,14 +32,14 @@ void WebServerInit()
   WebServer.on( api_wifiscanner, HTTP_GET, handle_api_wifiscanner_json);
 
   // [get]/api json
-  WebServer.on( "/api", HTTP_GET, handle_api_root);
+  WebServer.on( api_root, HTTP_GET, handle_api_root);
   // [get]/api/auth
   // @return status 204 || 401
   WebServer.on( api_auth, HTTP_OPTIONS, handle_api_config_options);
   WebServer.on( api_auth, HTTP_GET, handle_auth_api);
   // [get]/api/log
-  WebServer.on( "/api/log", HTTP_OPTIONS, handle_api_config_options);
-  WebServer.on( "/api/log", HTTP_GET, handle_api_log);
+  WebServer.on( api_log, HTTP_OPTIONS, handle_api_config_options);
+  WebServer.on( api_log, HTTP_GET, handle_api_log);
 
   // Prepare webserver pages
   WebServer.on( "/", handle_root);

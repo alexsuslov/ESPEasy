@@ -329,10 +329,8 @@ void handle_api_devices_json() {
     if (!customValues)
     {
       reply += F(",\"Tasks\":[");
-      for (byte varNr = 0; varNr < VARS_PER_TASK; varNr++)
-      {
-        if ((Settings.TaskDeviceNumber[x] != 0) and (varNr < Device[DeviceIndex].ValueCount))
-        {
+      for (byte varNr = 0; varNr < VARS_PER_TASK; varNr++) {
+        if ((Settings.TaskDeviceNumber[x] != 0) and (varNr < Device[DeviceIndex].ValueCount)) {
           if (varNr > 0) {
             reply += comma;
           }
@@ -364,34 +362,68 @@ void handle_api_devices_json() {
 void handle_api_device_json() {
   if (!isLoggedInApi()) return;
 
-  // open json
-  String reply = F("{");
-  struct EventStruct TempEvent;
-  String taskindex = WebServer.arg("index");
 
+  struct EventStruct TempEvent;
+  String taskindex  = WebServer.arg("i");
   byte index = taskindex.toInt();
 
+  LoadTaskSettings(index);
 
-  if (ExtraTaskSettings.TaskDeviceValueNames[0][0] == 0)
-
+  if (ExtraTaskSettings.TaskDeviceValueNames[0][0] == 0) {
     PluginCall(PLUGIN_GET_DEVICEVALUENAMES, &TempEvent, dummyString);
+  }
 
-  reply += json_number( "taskdevicenumber", String( Settings.TaskDeviceNumber[index]) );
-  reply += ", " + json_number("taskindex", taskindex );
-  reply += ", " + json_number("taskdeviceid", String(Settings.TaskDeviceID[index]) );
-  reply += ", " +  json_number("taskdevicepin1", Settings.TaskDevicePin1[index]) ;
-  reply += ", " + json_number("taskdevicepin2", Settings.TaskDevicePin2[index]) ;
-  reply += ", " + json_number("taskdevicepin3", Settings.TaskDevicePin3[index]) ;
-  reply += ", " + json_number("taskdevicepin1pullup", Settings.TaskDevicePin1PullUp[index]) ;
-  reply += ", " + json_number("taskdevicepin1inversed", Settings.TaskDevicePin1Inversed[index]) ;
-  reply += ", " + json_string("taskdevicepin1inversed", ExtraTaskSettings.TaskDeviceName) ;
-  reply += ", " + json_number("taskdeviceport", Settings.TaskDevicePort[index]) ;
-  reply += ", " + json_number("taskdevicesenddata", Settings.TaskDeviceSendData[index]) ;
-  reply += ", " + json_number("taskdeviceglobalsync", Settings.TaskDeviceGlobalSync[index]) ;
+  byte DeviceIndex = getDeviceIndex(Settings.TaskDeviceNumber[index]);
+
+  String deviceName = "";
+  if (Settings.TaskDeviceNumber[index] != 0) {
+      Plugin_ptr[DeviceIndex](PLUGIN_GET_DEVICENAME, &TempEvent, deviceName);
+  }
+
+  // open json
+  String reply = F("{");
+
+  reply +=        json_number(F("TaskDeviceNumber"),       String( Settings.TaskDeviceNumber[index] )      ); // byte [TASKS_MAX]
+  reply += ", " + json_string(F("DeviceName"),             deviceName                                      ); // String
+  reply += ", " + json_number(F("TaskIndex"),              index                                           ); // byte  [TASKS_MAX]
+  reply += ", " + json_string(F("TaskDeviceName"),         String( ExtraTaskSettings.TaskDeviceName )      ); // char[26]
+  reply += ", " + json_number(F("TaskDeviceID"),           String( Settings.TaskDeviceID[index])           ); // unsigned int [TASKS_MAX]
+  reply += ", " + json_number(F("TaskDevicePin1"),         Settings.TaskDevicePin1[index]                  ); // int8_t [TASKS_MAX]
+  reply += ", " + json_number(F("TaskDevicePin2"),         Settings.TaskDevicePin2[index]                  ); // int8_t [TASKS_MAX]
+  reply += ", " + json_number(F("TaskDevicePin3"),         Settings.TaskDevicePin3[index]                  ); // int8_t [TASKS_MAX]
+  reply += ", " + json_number(F("TaskDevicePin1PullUp"),   Settings.TaskDevicePin1PullUp[index]            ); // boolean [TASKS_MAX]
+  reply += ", " + json_number(F("TaskDevicePin1Inversed"), Settings.TaskDevicePin1Inversed[index]          ); // boolean [TASKS_MAX]
+  reply += ", " + json_number(F("TaskDevicePort"),         Settings.TaskDevicePort[index]                  ); // byte [TASKS_MAX]
+  reply += ", " + json_number(F("TaskDeviceSendData"),     Settings.TaskDeviceSendData[index]              ); // boolean [TASKS_MAX]
+  reply += ", " + json_number(F("TaskDeviceGlobalSync"),   Settings.TaskDeviceGlobalSync[index]            ); // boolean [TASKS_MAX]
+
+  reply += F(",\"Tasks\":[");
+  String comma = F(",");
+
+      for (byte varNr = 0; varNr < VARS_PER_TASK; varNr++) {
+        if ((Settings.TaskDeviceNumber[index] != 0) and (varNr < Device[DeviceIndex].ValueCount)) {
+          if (varNr > 0) {
+            reply += comma;
+          }
+          reply += F("{\"TaskDeviceValueName\":\"");
+          reply += ExtraTaskSettings.TaskDeviceValueNames[varNr]; // char TaskDeviceValueNames[VARS_PER_TASK][26]
+          reply += F("\"");
+//        if (Device[DeviceIndex].FormulaOption)
+          reply += comma;
+          reply += F("\"TaskDeviceFormula\":\"");
+          reply += ExtraTaskSettings.TaskDeviceFormula[varNr]; // char TaskDeviceFormula[VARS_PER_TASK][41];
+          reply += F("\"");
+          reply += comma;
+          reply += F("\"TaskDeviceValue\":\"");
+          reply += UserVar[index * VARS_PER_TASK + varNr]; // float UserVar[VARS_PER_TASK * TASKS_MAX];
+          reply += F("\"}");
+        }
+      }
+
+  reply += "]";
+
   // close json
   reply += F("}");
-  // debug
-  Serial.println(reply);
   // send to client
   WebServer.send(200, FPSTR(application_json), reply);
 
@@ -526,20 +558,23 @@ void handle_auth_api() {
 // Log api
 //*****************************************************************************
 void handle_api_log() {
-  if (!isLoggedInApi()) return;
-
-  byte counter = 9;
-  String reply = "[";
+  //if (!isLoggedInApi()) return;
   bool comma = false;
-  Serial_var( "counter:", String(counter) );
-  while (counter >=0){
-    if (Logging[counter].timeStamp > 0){
-      Serial_var( "timeStamp:", String(Logging[counter].timeStamp) );
-      Serial_var( "Message:", String(Logging[counter].Message) );
-  }
-    counter --;
+  String reply = F("[");
+
+  if (logcount != -1) {
+    byte counter = logcount;
+    do {
+      counter++;
+      if (counter > 9)  counter = 0;
+      if (Logging[counter].timeStamp > 0) {
+        if (comma) reply += F(",");
+        reply = reply + F("{ \"timeStamp\":\"") + Logging[counter].timeStamp + F("\", \"Message\": \"") + Logging[counter].Message + F("\"}");
+        comma = true;
+      }
+    }  while (counter != logcount);
   }
 
-  WebServer.send(200, FPSTR(application_json), "{\"test\":1}" );
-
+  reply += F("]");
+  WebServer.send(200, FPSTR(application_json), reply );
 }
