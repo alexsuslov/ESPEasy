@@ -1,3 +1,13 @@
+// urls
+const char api_root         [] = "/api";
+const char api_hardware     [] = "/api/hardware";
+const char api_config       [] = "/api/config";
+const char api_devices      [] = "/api/devices";
+const char api_device       [] = "/api/device";
+const char api_wifiscanner  [] = "/api/wifiscanner";
+const char api_auth         [] = "/api/auth";
+const char api_log          [] = "/api/log";
+
 //********************************************************************************
 // Web Interface init
 //********************************************************************************
