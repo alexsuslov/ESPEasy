@@ -176,6 +176,7 @@
 #include <FS.h>
 #endif
 #include <ESP8266HTTPUpdateServer.h>
+#include "progmem.h"
 ESP8266HTTPUpdateServer httpUpdater(true);
 
 // Setup DNS, only used if the ESP has no valid WiFi config
