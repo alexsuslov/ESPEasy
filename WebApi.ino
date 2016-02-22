@@ -56,23 +56,19 @@ void handle_api_wifiscanner_json() {
   if (!isLoggedInApi()) return;
 
   // open json
-  String reply = F("{");
-  String Networks = "";
-  String comma = reply;
+  String reply = F("[");
+  String comma = ",";
   int n = WiFi.scanNetworks();
   if (n == 0) {
     reply += json_string( F("error"), F("No Access Points found") );
   } else {
     for (int i = 0; i < n; ++i) {
-      Networks += comma +  json_string( F("SSID"), WiFi.SSID(i) ) + ",";
-      Networks += json_string( F("RSSI"), String(WiFi.RSSI(i) ) );
-      Networks += "}";
-      comma = F(",{");
+      if (i > 0) reply += comma;
+      reply = reply + F("{\"SSID\":\"") + WiFi.SSID(i) + F("\",\"RSSI\":\"") +  String( WiFi.RSSI(i) ) + F("\"}");
     }
-    reply += json_array( F("Networks"), Networks);
   }
   // close json
-  reply += F("}\n");
+  reply += F("]");
   // send to client
   WebServer.send(200, FPSTR(application_json), reply);
 
