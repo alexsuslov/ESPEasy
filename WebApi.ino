@@ -358,7 +358,7 @@ void handle_api_devices_json() {
   // close json
   reply += F("]");
   // debug
-  Serial.println(reply);
+  // Serial.println(reply);
   // send to client
   WebServer.send(200, FPSTR(application_json), reply);
 
@@ -457,6 +457,7 @@ void handle_api_device_json() {
 
 String json_esp_summary() {
   // open json
+  char tmp_buff[80]; // tmp buffer
   String reply = F("{");
   String comma;
 
@@ -464,7 +465,8 @@ String json_esp_summary() {
 
   int freeMem = ESP.getFreeHeap();
 
-  reply += "," + json_number( F("FreeMem"), freeMem );
+  reply += "," + json_number( F("FreeMem"), String( freeMem ) );
+
 
 
 #if FEATURE_TIME
@@ -478,41 +480,42 @@ String json_esp_summary() {
   }
 #endif
 
-  reply += "," + json_number( F("Uptime"), wdcounter / 2);
+  reply += "," + json_number( F("Uptime"), String(wdcounter / 2) );
   IPAddress ip = WiFi.localIP();
-  char str[20];
-  sprintf_P(str, PSTR("%u.%u.%u.%u"), ip[0], ip[1], ip[2], ip[3]);
-  reply += "," + json_string( F("IP"), str);
+  sprintf_P(tmp_buff, PSTR("%u.%u.%u.%u"), ip[0], ip[1], ip[2], ip[3]);
+  reply += "," + json_string( F("IP"), String(tmp_buff) );
+
   IPAddress gw = WiFi.gatewayIP();
-  sprintf_P(str, PSTR("%u.%u.%u.%u"), gw[0], gw[1], gw[2], gw[3]);
-  reply += "," + json_string( F("Gateway"), str);
+  sprintf_P(tmp_buff, PSTR("%u.%u.%u.%u"), gw[0], gw[1], gw[2], gw[3]);
+  reply += "," + json_string( F("Gateway"), String(tmp_buff) );
   reply += "," + json_string( F("Build"), String(BUILD));
   reply += "," + json_string( F("Unit"), String(Settings.Unit));
 
+
+
   uint8_t mac[] = {0, 0, 0, 0, 0, 0};
   uint8_t* macread = WiFi.macAddress(mac);
-  char macaddress[20];
-  sprintf_P(macaddress, PSTR("%02x:%02x:%02x:%02x:%02x:%02x"), macread[0], macread[1], macread[2], macread[3], macread[4], macread[5]);
-  reply += "," + json_string( F("STA_MAC"), macaddress);
+  sprintf_P(tmp_buff, PSTR("%02x:%02x:%02x:%02x:%02x:%02x"), macread[0], macread[1], macread[2], macread[3], macread[4], macread[5]);
+  reply += "," + json_string( F("STA_MAC"), String(tmp_buff) );
   macread = WiFi.softAPmacAddress(mac);
-  sprintf_P(macaddress, PSTR("%02x:%02x:%02x:%02x:%02x:%02x"), macread[0], macread[1], macread[2], macread[3], macread[4], macread[5]);
-  reply += "," + json_string( F("AP_MAC"), macaddress);
+  sprintf_P(tmp_buff, PSTR("%02x:%02x:%02x:%02x:%02x:%02x"), macread[0], macread[1], macread[2], macread[3], macread[4], macread[5]);
+  reply += "," + json_string( F("AP_MAC"), String(tmp_buff));
   reply += "," + json_string( F("Chip_id"), String(ESP.getChipId()));
   reply += "," + json_string( F("Flash_Chip_id"), String(ESP.getFlashChipId()));
   reply += "," + json_string( F("Flash_Size"), String(ESP.getFlashChipRealSize()));
-  reply += "," + json_number( F("Boot_cause"), lastBootCause );
-  reply += "," ;
-  reply += + F("\"NodeList\":[");
+
+  reply += "," + json_number( F("Boot_cause"), String(lastBootCause) ) + ",";
+  reply += F("\"NodeList\":[");
+  // return reply;
   comma  = F("{");
   for (byte x = 0; x < UNIT_MAX; x++)  {
     if (Nodes[x].ip[0] != 0)    {
-      char url[80];
-      sprintf_P(url, PSTR("<a href='http://%u.%u.%u.%u'>%u.%u.%u.%u</a>"), Nodes[x].ip[0], Nodes[x].ip[1], Nodes[x].ip[2], Nodes[x].ip[3], Nodes[x].ip[0], Nodes[x].ip[1], Nodes[x].ip[2], Nodes[x].ip[3]);
+      sprintf_P(tmp_buff, PSTR("<a href='http://%u.%u.%u.%u'>%u.%u.%u.%u</a>"), Nodes[x].ip[0], Nodes[x].ip[1], Nodes[x].ip[2], Nodes[x].ip[3], Nodes[x].ip[0], Nodes[x].ip[1], Nodes[x].ip[2], Nodes[x].ip[3]);
       reply += comma;
       reply += F("\"Unit\":\"");
       reply += x;
       reply += F("\",\"Url\":\"");
-      reply += url;
+      reply += tmp_buff;
       reply += F("\",\"Age\":\"");
       reply += Nodes[x].age;
       reply += F("\"}");
@@ -526,7 +529,7 @@ String json_esp_summary() {
 }
 
 void handle_api_root() {
-  // if (!isLoggedInApi()) return;
+  if (!isLoggedInApi()) return;
   WebServer.send(200, FPSTR(application_json), json_esp_summary());
 }
 
