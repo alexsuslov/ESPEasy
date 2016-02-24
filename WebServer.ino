@@ -1,5 +1,5 @@
 // urls
-const char api              [] = "/api";
+const char api              [] = "/api/";
 const char api_hardware     [] = "/api/hardware";
 const char api_config       [] = "/api/config";
 const char api_devices      [] = "/api/devices";
