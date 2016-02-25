@@ -174,6 +174,10 @@ void addFooter(String& str)
 //********************************************************************************
 void handle_root() {
 
+#if MEMORY_PROFILING
+  Serial_memory_log("handle_root","");
+#endif //MEMORY_PROFILING
+
   // if Wifi setup, launch setup wizard
   if (wifiSetup)
   {
@@ -319,6 +323,9 @@ void handle_root() {
 
     WebServer.send(200, FPSTR(text_html), "OK");
   }
+#if MEMORY_PROFILING
+  Serial_memory_log("handle_root","");
+#endif //MEMORY_PROFILING
 }
 
 //********************************************************************************
@@ -422,6 +429,9 @@ void post_config_save_no_pass() {
 // Web Interface config page
 //********************************************************************************
 void handle_config() {
+#if MEMORY_PROFILING
+  Serial_memory_log("handle_config","");
+#endif //MEMORY_PROFILING
   if (!isLoggedIn()) return;
 
   post_config_save();
@@ -553,6 +563,10 @@ void handle_config() {
   reply += F("</table></form>");
   addFooter(reply);
   WebServer.send(200, FPSTR(text_html), reply);
+
+#if MEMORY_PROFILING
+  Serial_memory_log("handle_config","");
+#endif //MEMORY_PROFILING
 }
 
 
@@ -586,6 +600,11 @@ void hardware_save() {
 // Web Interface hardware page
 //********************************************************************************
 void handle_hardware() {
+
+#if MEMORY_PROFILING
+  Serial_memory_log("handle_hardware","");
+#endif //MEMORY_PROFILING
+
   if (!isLoggedIn()) return;
 
   hardware_save();
@@ -627,6 +646,11 @@ void handle_hardware() {
   reply += F("</table></form>");
   addFooter(reply);
   WebServer.send(200, FPSTR(text_html), reply);
+
+#if MEMORY_PROFILING
+  Serial_memory_log("handle_hardware","");
+#endif //MEMORY_PROFILING
+
 }
 
 
@@ -666,6 +690,11 @@ void addPinStateSelect(String& str, String name,  int choice)
 // Web Interface device page
 //********************************************************************************
 void handle_devices() {
+
+#if MEMORY_PROFILING
+  Serial_memory_log("handle_devices","");
+#endif //MEMORY_PROFILING
+
   if (!isLoggedIn()) return;
 
   char tmpString[41];
@@ -1038,6 +1067,9 @@ void handle_devices() {
 
   addFooter(reply);
   WebServer.send(200, FPSTR(text_html), reply);
+#if MEMORY_PROFILING
+  Serial_memory_log("handle_devices","");
+#endif //MEMORY_PROFILING
 }
 
 
@@ -1283,6 +1315,9 @@ void addTaskValueSelect(String& str, String name,  int choice, byte TaskIndex)
 // Web Interface log page
 //********************************************************************************
 void handle_log() {
+#if MEMORY_PROFILING
+  Serial_memory_log("handle_log","");
+#endif //MEMORY_PROFILING
   if (!isLoggedIn()) return;
 
   char *TempString = (char*)malloc(80);
@@ -1312,6 +1347,11 @@ void handle_log() {
   reply += F("</table>");
   addFooter(reply);
   WebServer.send(200, FPSTR(text_html), reply);
+
+#if MEMORY_PROFILING
+  Serial_memory_log("handle_log","");
+#endif //MEMORY_PROFILING
+
   free(TempString);
 }
 
