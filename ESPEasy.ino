@@ -102,7 +102,7 @@
 #define BUILD                              78
 #define REBOOT_ON_MAX_CONNECTION_FAILURES  30
 #define FEATURE_SPIFFS                  false
-#define FEATURE_API                     false
+#define FEATURE_API                      true
 
 #define CPLUGIN_PROTOCOL_ADD                1
 #define CPLUGIN_PROTOCOL_TEMPLATE           2

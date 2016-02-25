@@ -29,3 +29,14 @@ git clone https://github.com/ESP8266nu/ESPEasy.git
 ## Important
 
 Compile only in arduino 1.6.5
+
+
+## test
+
+### FEATURE_API                     false
+Free Mem:   25880
+
+### FEATURE_API                     true
+
+Uploading 385584 bytes
+Free Mem:   24832
