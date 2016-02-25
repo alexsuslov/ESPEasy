@@ -12,6 +12,58 @@
   const char api_pass         [] = "/api/pass";
 
 #endif // FEATURE_API
+#if MEMORY_PROFILING
+  void handle_api_root_mem() {
+    Serial_memory_log("handle_api_root","start");
+    handle_api_root();
+    Serial_memory_log("handle_api_root","end");
+  }
+  void handle_api_config_options_mem() {
+    Serial_memory_log("handle_api_config_options","start");
+    handle_api_config_options();
+    Serial_memory_log("handle_api_config_options","end");
+  }
+  void handle_auth_api_mem() {
+    Serial_memory_log("handle_auth_api","start");
+    handle_auth_api();
+    Serial_memory_log("handle_auth_api","end");
+  }
+  void handle_api_config_json_mem() {
+    Serial_memory_log("handle_api_config_json","start");
+    handle_api_config_json();
+    Serial_memory_log("handle_api_config_json","end");
+  }
+  void handle_api_hardware_json_mem() {
+    Serial_memory_log("handle_api_hardware_json","start");
+    handle_api_hardware_json();
+    Serial_memory_log("handle_api_hardware_json","end");
+  }
+  void handle_api_devices_json_mem() {
+    Serial_memory_log("handle_api_devices_json","start");
+    handle_api_devices_json();
+    Serial_memory_log("handle_api_devices_json","end");
+  }
+  void handle_api_device_json_mem() {
+    Serial_memory_log("handle_api_device_json","start");
+    handle_api_device_json();
+    Serial_memory_log("handle_api_device_json","end");
+  }
+  void handle_api_wifiscanner_json_mem() {
+    Serial_memory_log("handle_api_wifiscanner_json","start");
+    handle_api_wifiscanner_json();
+    Serial_memory_log("handle_api_wifiscanner_json","end");
+  }
+  void handle_api_log_mem() {
+    Serial_memory_log("handle_api_log","start");
+    handle_api_log();
+    Serial_memory_log("handle_api_log","end");
+  }
+  void handle_api_pass_post_mem() {
+    Serial_memory_log("handle_api_pass_post","start");
+    handle_api_pass_post();
+    Serial_memory_log("handle_api_pass_post","end");
+  }
+#endif //MEMORY_PROFILING
 
 //********************************************************************************
 // Web Interface init
@@ -20,6 +72,39 @@ void WebServerInit()
 {
 
 #if FEATURE_API
+#if MEMORY_PROFILING
+  // [get][options][post] api  json
+  // @return status 204 || 401
+  WebServer.on( api, HTTP_GET, handle_api_root_mem);
+  WebServer.on( api, HTTP_OPTIONS, handle_api_config_options_mem);
+  WebServer.on( api, HTTP_POST, handle_auth_api_mem);
+
+  // [get]/api/config
+  WebServer.on( api_config, HTTP_GET, handle_api_config_json_mem);
+  WebServer.on( api_config, HTTP_POST, handle_api_config_json_mem);
+  WebServer.on( api_config, HTTP_OPTIONS, handle_api_config_json_mem);
+  
+  // [get][options][post] /api/hardware json
+  WebServer.on( api_hardware, HTTP_GET, handle_api_hardware_json_mem);
+  WebServer.on( api_hardware, HTTP_POST, handle_api_hardware_json_mem);
+  WebServer.on( api_hardware, HTTP_OPTIONS, handle_api_hardware_json_mem);
+
+  // [get]/api/devices json
+  WebServer.on( api_devices, HTTP_GET, handle_api_devices_json_mem);
+
+  // [get][options][post] /api/device?index=1 json
+  WebServer.on( api_device, HTTP_GET, handle_api_device_json_mem);
+  WebServer.on( api_device, HTTP_POST, handle_api_device_json_mem);
+  WebServer.on( api_device, HTTP_OPTIONS, handle_api_device_json_mem);
+
+  // [get]/api/wifiscanner json
+  WebServer.on( api_wifiscanner, HTTP_GET, handle_api_wifiscanner_json_mem);
+
+  // [get][options][post] /api/log
+  WebServer.on( api_log, HTTP_OPTIONS, handle_api_config_options_mem);
+  WebServer.on( api_log, HTTP_GET, handle_api_log_mem);
+  WebServer.on( api_log, HTTP_POST, handle_api_pass_post_mem);
+#else //MEMORY_PROFILING
   // [get][options][post] api  json
   // @return status 204 || 401
   WebServer.on( api, HTTP_GET, handle_api_root);
@@ -52,8 +137,10 @@ void WebServerInit()
   WebServer.on( api_log, HTTP_OPTIONS, handle_api_config_options);
   WebServer.on( api_log, HTTP_GET, handle_api_log);
   WebServer.on( api_log, HTTP_POST, handle_api_pass_post);
-#endif
+#endif //MEMORY_PROFILING
+#endif //FEATURE_API
 
+#if !DISABLE_HTML
   // Prepare webserver pages
   WebServer.on( "/", handle_root);
   WebServer.on( "/config", handle_config);
@@ -81,10 +168,13 @@ void WebServerInit()
   if (ESP.getFlashChipRealSize() > 524288)
     httpUpdater.setup(&WebServer);
 
+#endif //!DISABLE_HTML
+
   WebServer.begin();
   Serial.println(F("WebServer Start"));
 }
 
+#if !DISABLE_HTML
 
 //********************************************************************************
 // Add top menu
@@ -327,6 +417,7 @@ void handle_root() {
   Serial_memory_log("handle_root","");
 #endif //MEMORY_PROFILING
 }
+#endif //!DISABLE_HTML
 
 //********************************************************************************
 // Save [POST] body -> password and save other by calling post_config_save_no_pass
@@ -424,6 +515,7 @@ void post_config_save_no_pass() {
     SaveSettings();
   }
 }
+#if !DISABLE_HTML
 
 //********************************************************************************
 // Web Interface config page
@@ -1072,6 +1164,7 @@ void handle_devices() {
 #endif //MEMORY_PROFILING
 }
 
+#endif //!DISABLE_HTML
 
 byte sortedIndex[DEVICES_MAX + 1];
 //********************************************************************************
@@ -1310,6 +1403,7 @@ void addTaskValueSelect(String& str, String name,  int choice, byte TaskIndex)
   }
 }
 
+#if !DISABLE_HTML
 
 //********************************************************************************
 // Web Interface log page
@@ -1562,6 +1656,7 @@ void handle_login() {
   printToWeb = false;
 }
 
+#endif //!DISABLE_HTML
 
 //********************************************************************************
 // Web Interface control page (no password!)
@@ -1599,6 +1694,7 @@ void handle_control() {
   printToWeb = false;
 }
 
+#if !DISABLE_HTML
 
 //********************************************************************************
 // Web Interface JSON page (no password!)
@@ -1815,6 +1911,7 @@ void handle_advanced() {
   addFooter(reply);
   WebServer.send(200, FPSTR(text_html), reply);
 }
+#endif //!DISABLE_HTML
 
 // api version is Logged In
 boolean isLoggedInApi(){
@@ -2131,7 +2228,7 @@ void handle_css() {
   delete [] data;
 }
 
-
+#if !DISABLE_HTML
 //********************************************************************************
 // Web Interface upload page
 //********************************************************************************
@@ -2235,6 +2332,7 @@ void handleFileUpload()
       SaveSettings();
   }
 }
+#endif //!DISABLE_HTML
 #endif
 
 
@@ -2267,7 +2365,7 @@ void handleNotFound() {
   WebServer.send(404, text_plain, message);
 }
 
-
+#if !DISABLE_HTML
 //********************************************************************************
 // Web Interface Setup Wizard
 //********************************************************************************
@@ -2394,7 +2492,7 @@ void handle_setup() {
   WebServer.send(200, FPSTR(text_html), reply);
   delay(10);
 }
-
+#endif //!DISABLE_HTML
 
 //********************************************************************************
 // URNEncode char string to string object

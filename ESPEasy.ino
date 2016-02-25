@@ -103,6 +103,7 @@
 #define REBOOT_ON_MAX_CONNECTION_FAILURES  30
 #define FEATURE_SPIFFS                  false
 #define FEATURE_API                      true
+#define DISABLE_HTML                     true
 #define MEMORY_PROFILING                 true
 
 #define CPLUGIN_PROTOCOL_ADD                1
@@ -353,6 +354,11 @@ byte lastBootCause = 0;
 boolean wifiSetup = false;
 boolean wifiSetupConnect = false;
 
+#if MEMORY_PROFILING
+  long lastMem = 0;
+#endif //MEMORY_PROFILING
+
+
 /*********************************************************************************************\
  * SETUP
 \*********************************************************************************************/
@@ -542,6 +548,10 @@ void loop()
       sprintf_P(str, PSTR("Uptime %u ConnectFailures %u FreeMem %u"), wdcounter / 2, connectionFailures, FreeMem());
       String log = F("WD   : ");
       log += str;
+      #if MEMORY_PROFILING
+        log += " MemLeak " + String( (int)( lastMem - FreeMem() ) );
+        lastMem = FreeMem();
+      #endif //MEMORY_PROFILING
       addLog(LOG_LEVEL_INFO, log);
       sendSysInfoUDP(1);
       refreshNodeList();

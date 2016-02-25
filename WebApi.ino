@@ -54,10 +54,6 @@ String json_array(  String name, String values)  {
 //********************************************************************************
 void handle_api_wifiscanner_json() {
 
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_wifiscanner_json","");
-#endif //MEMORY_PROFILING
-
   if (!isLoggedInApi()) return;
 
   // open json
@@ -78,10 +74,6 @@ void handle_api_wifiscanner_json() {
   reply += F("]");
   // send to client
   WebServer.send(200, FPSTR(application_json), reply);
-
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_wifiscanner_json","");
-#endif //MEMORY_PROFILING
 
 }
 
@@ -108,10 +100,6 @@ void handle_api_wifiscanner_json() {
 // }
 //********************************************************************************
 void handle_api_config_json() {
-
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_config_json","");
-#endif //MEMORY_PROFILING
 
   if (!isLoggedInApi()) return;
   // open json
@@ -171,10 +159,6 @@ void handle_api_config_json() {
   // debug
   WebServer.send(200, FPSTR(application_json), reply);
 
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_config_json","");
-#endif //MEMORY_PROFILING
-
 }
 
 
@@ -185,16 +169,8 @@ void handle_api_config_json() {
 //********************************************************************************
 void handle_api_config_post() {
 
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_config_post","");
-#endif //MEMORY_PROFILING
-
   post_config_save_no_pass(); // password will be not save
   handle_api_config_json();
-
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_config_post","");
-#endif //MEMORY_PROFILING
 
 }
 
@@ -205,16 +181,8 @@ void handle_api_config_post() {
 //********************************************************************************
 void handle_api_pass_post() {
 
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_pass_post","");
-#endif //MEMORY_PROFILING
-
   String password = WebServer.arg("password");
   strncpy(SecuritySettings.Password, password.c_str(), sizeof(SecuritySettings.Password));
-
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_pass_post","");
-#endif //MEMORY_PROFILING
 
 }
 
@@ -231,10 +199,6 @@ void handle_api_config_options() {
 // @return json
 //********************************************************************************
 void handle_api_hardware_json() {
-
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_hardware_json","");
-#endif //MEMORY_PROFILING
 
   if (!isLoggedInApi()) return;
 
@@ -255,10 +219,6 @@ void handle_api_hardware_json() {
   // send to client
   WebServer.send(200, FPSTR(application_json), reply);
 
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_hardware_json","");
-#endif //MEMORY_PROFILING
-
 }
 
 //********************************************************************************
@@ -267,16 +227,8 @@ void handle_api_hardware_json() {
 //********************************************************************************
 void handle_api_hardware_post() {
 
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_hardware_post","");
-#endif //MEMORY_PROFILING
-
   hardware_save();
   handle_api_hardware_json();
-
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_hardware_post","");
-#endif //MEMORY_PROFILING
 
 }
 
@@ -285,10 +237,6 @@ void handle_api_hardware_post() {
 // @return json
 //********************************************************************************
 void handle_api_devices_json() {
-
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_devices_json","");
-#endif //MEMORY_PROFILING
 
   if (!isLoggedInApi()) return;
 
@@ -423,18 +371,10 @@ void handle_api_devices_json() {
   // send to client
   WebServer.send(200, FPSTR(application_json), reply);
 
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_devices_json","");
-#endif //MEMORY_PROFILING
-
 }
 
 /////////////////////////////////////////////////////////////
 void handle_api_device_json() {
-
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_device_json","");
-#endif //MEMORY_PROFILING
 
   if (!isLoggedInApi()) return;
 
@@ -503,10 +443,6 @@ void handle_api_device_json() {
   // send to client
   WebServer.send(200, FPSTR(application_json), reply);
 
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_device_json","");
-#endif //MEMORY_PROFILING
-
 }
 //********************************************************************************
 // API [GET] root
@@ -530,9 +466,6 @@ void handle_api_device_json() {
 //********************************************************************************
 
 String json_esp_summary() {
-#if MEMORY_PROFILING
-  Serial_memory_log("json_esp_summary","");
-#endif //MEMORY_PROFILING
   // open json
   char tmp_buff[80]; // tmp buffer
   String reply = F("{");
@@ -603,20 +536,11 @@ String json_esp_summary() {
   // close json
   reply += F("]}");
   return reply;
-#if MEMORY_PROFILING
-  Serial_memory_log("json_esp_summary","");
-#endif //MEMORY_PROFILING
 }
 
 void handle_api_root() {
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_root","");
-#endif //MEMORY_PROFILING
   if (!isLoggedInApi()) return;
   WebServer.send(200, FPSTR(application_json), json_esp_summary());
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_root","");
-#endif //MEMORY_PROFILING
 }
 
 
@@ -653,9 +577,6 @@ void handle_auth_api() {
 // Log api
 //*****************************************************************************
 void handle_api_log() {
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_log","");
-#endif //MEMORY_PROFILING
   //if (!isLoggedInApi()) return;
   bool comma = false;
   String reply = F("[");
@@ -675,9 +596,6 @@ void handle_api_log() {
 
   reply += F("]");
   WebServer.send(200, FPSTR(application_json), reply );
-#if MEMORY_PROFILING
-  Serial_memory_log("handle_api_log","");
-#endif //MEMORY_PROFILING
 }
 
 #endif // FEATURE_API
