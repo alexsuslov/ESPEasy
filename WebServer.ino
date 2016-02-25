@@ -1,19 +1,25 @@
-// urls
-const char api              [] = "/api/";
-const char api_hardware     [] = "/api/hardware";
-const char api_config       [] = "/api/config";
-const char api_devices      [] = "/api/devices";
-const char api_device       [] = "/api/device";
-const char api_wifiscanner  [] = "/api/wifiscanner";
-const char api_auth         [] = "/api/auth";
-const char api_log          [] = "/api/log";
-const char api_pass         [] = "/api/pass";
+#if FEATURE_API
+
+  // urls
+  const char api              [] = "/api/";
+  const char api_hardware     [] = "/api/hardware";
+  const char api_config       [] = "/api/config";
+  const char api_devices      [] = "/api/devices";
+  const char api_device       [] = "/api/device";
+  const char api_wifiscanner  [] = "/api/wifiscanner";
+  const char api_auth         [] = "/api/auth";
+  const char api_log          [] = "/api/log";
+  const char api_pass         [] = "/api/pass";
+
+#endif // FEATURE_API
 
 //********************************************************************************
 // Web Interface init
 //********************************************************************************
 void WebServerInit()
 {
+
+#if FEATURE_API
   // [get][options][post] api  json
   // @return status 204 || 401
   WebServer.on( api, HTTP_GET, handle_api_root);
@@ -46,6 +52,7 @@ void WebServerInit()
   WebServer.on( api_log, HTTP_OPTIONS, handle_api_config_options);
   WebServer.on( api_log, HTTP_GET, handle_api_log);
   WebServer.on( api_log, HTTP_POST, handle_api_pass_post);
+#endif
 
   // Prepare webserver pages
   WebServer.on( "/", handle_root);

@@ -22,7 +22,7 @@ const char image_gif [] PROGMEM = "image/gif";
 const char image_jpeg [] PROGMEM = "image/jpeg";
 const char image_icon [] PROGMEM = "image/x-icon";
 
-
+#if FEATURE_API
 // @return "name":"value" from name, value
 String json_string(  String name, String value  ) {
   return "\"" + name + "\"" + ":" + "\"" + value + "\"";
@@ -587,3 +587,5 @@ void handle_api_log() {
   reply += F("]");
   WebServer.send(200, FPSTR(application_json), reply );
 }
+
+#endif // FEATURE_API
