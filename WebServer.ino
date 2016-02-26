@@ -23,6 +23,11 @@
     handle_api_config_options();
     Serial_memory_log("handle_api_config_options","end");
   }
+  void handle_api_config_post_mem() {
+    Serial_memory_log("handle_api_config_post","start");
+    handle_api_config_post();
+    Serial_memory_log("handle_api_config_post","end");
+  }
   void handle_auth_api_mem() {
     Serial_memory_log("handle_auth_api","start");
     handle_auth_api();
@@ -91,8 +96,8 @@ void WebServerInit()
 
   // [get]/api/config
   WebServer.on( api_config, HTTP_GET, handle_api_config_json_mem);
-  WebServer.on( api_config, HTTP_POST, handle_api_config_json_mem);
-  WebServer.on( api_config, HTTP_OPTIONS, handle_api_config_json_mem);
+  WebServer.on( api_config, HTTP_POST, handle_api_config_post_mem);
+  WebServer.on( api_config, HTTP_OPTIONS, handle_api_config_options_mem);
 
   // [get][options][post] /api/hardware json
   WebServer.on( api_hardware, HTTP_GET, handle_api_hardware_json_mem);

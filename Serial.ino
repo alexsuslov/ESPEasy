@@ -11,7 +11,6 @@ void ExecuteCommand(const char *Line)
   int Par1 = 0;
   int Par2 = 0;
   int Par3 = 0;
-
   GetArgv(Line, Command, 1);
   if (GetArgv(Line, TmpStr1, 2)) Par1 = str2int(TmpStr1);
   if (GetArgv(Line, TmpStr1, 3)) Par2 = str2int(TmpStr1);
@@ -26,7 +25,7 @@ void ExecuteCommand(const char *Line)
   {
     taskClear(Par1 - 1,true);
   }
- 
+
   if (strcasecmp_P(Command, PSTR("wdconfig")) == 0)
   {
     Wire.beginTransmission(Par1);  // address
@@ -49,7 +48,7 @@ void ExecuteCommand(const char *Line)
       {
         printWebString += F("Reg value: ");
         printWebString += value;
-      }      
+      }
       Serial.print(F("Reg value: "));
       Serial.println(value);
     }
@@ -101,7 +100,7 @@ void ExecuteCommand(const char *Line)
     else
       Serial.println("Error getting data");
   }
-  
+
   // ****************************************
   // configure settings commands
   // ****************************************
@@ -140,7 +139,7 @@ void ExecuteCommand(const char *Line)
     WiFi.disconnect(); // this will store empty ssid/wpa into sdk storage
     WiFi.persistent(false); // Do not use SDK storage of SSID/WPA parameters
   }
-  
+
   if (strcasecmp_P(Command, PSTR("Reset")) == 0)
     ResetFactory();
 
