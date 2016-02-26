@@ -378,7 +378,6 @@ void handle_api_device_json() {
 
   if (!isLoggedInApi()) return;
 
-
   struct EventStruct TempEvent;
   String taskindex  = WebServer.arg("i");
   byte index = taskindex.toInt();
@@ -597,5 +596,108 @@ void handle_api_log() {
   reply += F("]");
   WebServer.send(200, FPSTR(application_json), reply );
 }
+
+//*****************************************************************************
+// api version is Logged In
+//*****************************************************************************
+boolean isLoggedInApi(){
+  if (SecuritySettings.Password[0] == 0)
+    WebLoggedIn = true;
+
+  if (!WebLoggedIn) {
+    WebServer.send(401);
+  } else {
+    WebLoggedInTimer = 0;
+  }
+
+  return WebLoggedIn;
+}
+//********************************************************************************
+// json I2C scanner
+//********************************************************************************
+void handle_api_i2cscanner() {
+
+  if (!isLoggedInApi()) return;
+
+  String reply = "[";
+  byte error, address, nDevices;
+  nDevices = 0;
+  String comma = "";
+
+  for (address = 1; address <= 127; address++ )
+  {
+    Wire.beginTransmission(address);
+    error = Wire.endTransmission();
+    if (error == 0) {
+      reply += comma;
+      reply += F("{\"address\":\"");
+      reply += String(address, HEX) + F("\", \"device\":\"");
+      comma = F(",");
+      switch (address) {
+        case 0x20:
+        case 0x27:
+        case 0x3F:
+          reply += F("PCF8574, MCP23017, LCD Modules");
+          break;
+        case 0x23:
+          reply += F("BH1750 Lux Sensor");
+          break;
+        case 0x24:
+          reply += F("PN532 RFID Reader");
+          break;
+        case 0x39:
+          reply += F("TLS2561 Lux Sensor");
+          break;
+        case 0x3C:
+        case 0x3D:
+          reply += F("OLED SSD1306 Display");
+          break;
+        case 0x40:
+          reply += F("SI7021 Temp/Hum Sensor, INA219");
+          break;
+        case 0x48:
+          reply += F("PCF8591 ADC");
+          break;
+        case 0x68:
+          reply += F("DS1307 RTC");
+          break;
+        case 0x76:
+          reply += F("BME280");
+          break;
+        case 0x77:
+          reply += F("BMP085");
+          break;
+        case 0x7f:
+          reply += F("Arduino Pro Mini IO Extender");
+          break;
+      }
+      reply += F("\"}");
+      nDevices++;
+    }
+  }
+
+  reply += F("]");
+  WebServer.send(200, FPSTR(application_json), reply );
+} // handle_api_i2cscanner
+
+//********************************************************************************
+// handle_api_command
+//********************************************************************************
+void handle_api_command() {
+  if (!isLoggedInApi()) return;
+
+  String sCommand = WebServer.arg("cmd");
+
+  String reply = "";
+  printToWeb = true;
+  printWebString = "";
+  ExecuteCommand(sCommand.c_str());
+  reply += F("{\"reply\":\"");
+  reply += printWebString + F("\"}");
+  WebServer.send(200, FPSTR(application_json), reply );
+  printWebString = "";
+  printToWeb = false;
+
+} // handle_api_command
 
 #endif // FEATURE_API

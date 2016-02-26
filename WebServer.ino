@@ -63,6 +63,16 @@
     handle_api_pass_post();
     Serial_memory_log("handle_api_pass_post","end");
   }
+  void handle_api_i2cscanner_mem() {
+    Serial_memory_log("handle_api_i2cscanner","start");
+    handle_api_i2cscanner();
+    Serial_memory_log("handle_api_i2cscanner","end");
+  }
+  void handle_api_command_mem() {
+    Serial_memory_log("handle_api_command","start");
+    handle_api_command();
+    Serial_memory_log("handle_api_command","end");
+  }
 #endif //MEMORY_PROFILING
 
 //********************************************************************************
@@ -83,7 +93,7 @@ void WebServerInit()
   WebServer.on( api_config, HTTP_GET, handle_api_config_json_mem);
   WebServer.on( api_config, HTTP_POST, handle_api_config_json_mem);
   WebServer.on( api_config, HTTP_OPTIONS, handle_api_config_json_mem);
-  
+
   // [get][options][post] /api/hardware json
   WebServer.on( api_hardware, HTTP_GET, handle_api_hardware_json_mem);
   WebServer.on( api_hardware, HTTP_POST, handle_api_hardware_json_mem);
@@ -100,10 +110,17 @@ void WebServerInit()
   // [get]/api/wifiscanner json
   WebServer.on( api_wifiscanner, HTTP_GET, handle_api_wifiscanner_json_mem);
 
+  // [get]/api/i2cscanner json
+  WebServer.on("/api/i2c", handle_api_i2cscanner_mem);
+
   // [get][options][post] /api/log
   WebServer.on( api_log, HTTP_OPTIONS, handle_api_config_options_mem);
   WebServer.on( api_log, HTTP_GET, handle_api_log_mem);
   WebServer.on( api_log, HTTP_POST, handle_api_pass_post_mem);
+
+  // [get]/api/command json
+  WebServer.on("/api/command", handle_api_command_mem);
+
 #else //MEMORY_PROFILING
   // [get][options][post] api  json
   // @return status 204 || 401
@@ -132,11 +149,17 @@ void WebServerInit()
 
   // [get]/api/wifiscanner json
   WebServer.on( api_wifiscanner, HTTP_GET, handle_api_wifiscanner_json);
+  // [get]/api/i2cscanner json
+  WebServer.on("/api/i2c", handle_api_i2cscanner);
 
   // [get][options][post] /api/log
   WebServer.on( api_log, HTTP_OPTIONS, handle_api_config_options);
   WebServer.on( api_log, HTTP_GET, handle_api_log);
   WebServer.on( api_log, HTTP_POST, handle_api_pass_post);
+
+  // [get]/api/command json
+  WebServer.on("/api/command", handle_api_command);
+
 #endif //MEMORY_PROFILING
 #endif //FEATURE_API
 
@@ -1584,7 +1607,6 @@ void handle_i2cscanner() {
   free(TempString);
 }
 
-
 //********************************************************************************
 // Web Interface Wifi scanner
 //********************************************************************************
@@ -1912,21 +1934,6 @@ void handle_advanced() {
   WebServer.send(200, FPSTR(text_html), reply);
 }
 #endif //!DISABLE_HTML
-
-// api version is Logged In
-boolean isLoggedInApi(){
-  if (SecuritySettings.Password[0] == 0)
-    WebLoggedIn = true;
-
-  if (!WebLoggedIn) {
-    WebServer.send(401);
-  } else {
-    WebLoggedInTimer = 0;
-  }
-
-  return WebLoggedIn;
-}
-
 
 //********************************************************************************
 // Login state check
