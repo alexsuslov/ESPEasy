@@ -46,6 +46,11 @@
     handle_api_hardware_json();
     Serial_memory_log("handle_api_hardware_json","end");
   }
+  void handle_api_hardware_post_mem() {
+    Serial_memory_log("handle_api_hardware_post","start");
+    handle_api_hardware_post();
+    Serial_memory_log("handle_api_hardware_post","end");
+  }
   void handle_api_devices_json_mem() {
     Serial_memory_log("handle_api_devices_json","start");
     handle_api_devices_json();
@@ -109,7 +114,7 @@ void WebServerInit()
 
   // [get][options][post] /api/hardware json
   WebServer.on( api_hardware, HTTP_GET, handle_api_hardware_json_mem);
-  WebServer.on( api_hardware, HTTP_POST, handle_api_hardware_json_mem);
+  WebServer.on( api_hardware, HTTP_POST, handle_api_hardware_post_mem);
   WebServer.on( api_hardware, HTTP_OPTIONS, handle_api_options_mem);
 
   // [get]/api/devices json
