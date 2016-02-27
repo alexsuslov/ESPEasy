@@ -1,17 +1,17 @@
 #if FEATURE_API
   // urls
-  const char api             [] PROGMEM = "/api/";
-  const char api_hardware    [] PROGMEM = "/api/hardware";
-  const char api_config      [] PROGMEM = "/api/config";
-  const char api_devices     [] PROGMEM = "/api/devices";
-  const char api_device      [] PROGMEM = "/api/device";
-  const char api_wifiscanner [] PROGMEM = "/api/wifiscanner";
-  const char api_auth        [] PROGMEM = "/api/auth";
-  const char api_log         [] PROGMEM = "/api/log";
-  const char api_pass        [] PROGMEM = "/api/pass";
-  const char api_i2c         [] PROGMEM = "/api/i2c";
-  const char api_cmd     [] PROGMEM = "/api/cmd";
-  const char api_advanced    [] PROGMEM = "/api/advanced";
+  const char api             []  = "/api/";
+  const char api_hardware    []  = "/api/hardware";
+  const char api_config      []  = "/api/config";
+  const char api_devices     []  = "/api/devices";
+  const char api_device      []  = "/api/device";
+  const char api_wifiscanner []  = "/api/wifiscanner";
+  const char api_auth        []  = "/api/auth";
+  const char api_log         []  = "/api/log";
+  const char api_pass        []  = "/api/pass";
+  const char api_i2c         []  = "/api/i2c";
+  const char api_cmd         []  = "/api/cmd";
+  const char api_advanced    []  = "/api/advanced";
 
 #endif // FEATURE_API
 
