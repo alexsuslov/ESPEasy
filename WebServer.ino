@@ -12,7 +12,7 @@
   const char api_i2c         []  = "/api/i2c";
   const char api_cmd         []  = "/api/cmd";
   const char api_advanced    []  = "/api/advanced";
-
+  const char api_protocols   []  = "/api/protocols";
 #endif // FEATURE_API
 
 #if MEMORY_PROFILING
@@ -61,6 +61,11 @@
     handle_api_device_json();
     Serial_memory_log("handle_api_device_json","end");
   }
+  void handle_api_device_post_mem() {
+    Serial_memory_log("handle_api_device_post","start");
+    handle_api_device_post();
+    Serial_memory_log("handle_api_device_json","end");
+  }
   void handle_api_wifiscanner_json_mem() {
     Serial_memory_log("handle_api_wifiscanner_json","start");
     handle_api_wifiscanner_json();
@@ -91,6 +96,14 @@
     handle_api_advanced();
     Serial_memory_log("handle_api_advanced","end");
   }
+  void handle_api_protocols_mem() {
+    Serial_memory_log("handle_api_protocols","start");
+    handle_api_protocols();
+    Serial_memory_log("handle_api_protocols","end");
+  }
+
+
+
 #endif //MEMORY_PROFILING
 
 //********************************************************************************
@@ -122,7 +135,7 @@ void WebServerInit()
 
   // [get][options][post] /api/device?index=1 json
   WebServer.on( api_device, HTTP_GET, handle_api_device_json_mem);
-  WebServer.on( api_device, HTTP_POST, handle_api_device_json_mem);
+  WebServer.on( api_device, HTTP_POST, handle_api_device_post_mem);
   WebServer.on( api_device, HTTP_OPTIONS, handle_api_options_mem);
 
   // [get]/api/wifiscanner json
@@ -136,14 +149,17 @@ void WebServerInit()
   WebServer.on( api_log, HTTP_GET, handle_api_log_mem);
   WebServer.on( api_log, HTTP_POST, handle_api_pass_post_mem);
 
-  // [post]/api/command json
-  WebServer.on( api_cmd, HTTP_POST, handle_api_cmd_mem);
+  // [post][options]/api/command json
   WebServer.on( api_cmd, HTTP_OPTIONS, handle_api_options_mem);
+  WebServer.on( api_cmd, HTTP_POST, handle_api_cmd_mem);
 
   // [get][options][post] /api/advanced
   WebServer.on( api_advanced, HTTP_GET, handle_api_advanced_mem);
   WebServer.on( api_advanced, HTTP_POST, handle_api_advanced_mem);
   WebServer.on( api_advanced, HTTP_OPTIONS, handle_api_options_mem);
+
+  // [get]/api/protocols json
+  WebServer.on( api_protocols, HTTP_GET, handle_api_protocols_mem);
 
 #else //MEMORY_PROFILING
   // [get][options][post] api  json
@@ -168,7 +184,7 @@ void WebServerInit()
 
   // [get][options][post] /api/device?index=1 json
   WebServer.on( api_device, HTTP_GET, handle_api_device_json);
-  WebServer.on( api_device, HTTP_POST, handle_api_device_json);
+  WebServer.on( api_device, HTTP_POST, handle_api_device_post);
   WebServer.on( api_device, HTTP_OPTIONS, handle_api_options);
 
   // [get]/api/wifiscanner json
@@ -181,13 +197,17 @@ void WebServerInit()
   WebServer.on( api_log, HTTP_GET, handle_api_log);
   WebServer.on( api_log, HTTP_POST, handle_api_pass_post);
 
-  // [get]/api/command json
-  WebServer.on( api_cmd, handle_api_cmd);
+  // [post][options]/api/command json
+  WebServer.on( api_cmd, HTTP_OPTIONS, handle_api_options);
+  WebServer.on( api_cmd, HTTP_POST, handle_api_cmd);
 
   // [get][options][post] /api/advanced
   WebServer.on( api_advanced, HTTP_GET, handle_api_advanced);
   WebServer.on( api_advanced, HTTP_POST, handle_api_advanced);
   WebServer.on( api_advanced, HTTP_OPTIONS, handle_api_options);
+
+  // [get]/api/protocols json
+  WebServer.on( api_protocols, HTTP_GET, handle_api_protocols_mem);
 
 #endif //MEMORY_PROFILING
 #endif //FEATURE_API
@@ -474,7 +494,7 @@ void handle_root() {
 //********************************************************************************
 // Save [POST] body -> password and save other by calling post_config_save_no_pass
 // used by handle_config(back compatible)
-// used by handle_api_config_post
+// used by handle_api_config_post  (shared with json API and HTML)
 //********************************************************************************
 void post_config_save() {
   if (!isLoggedInApi()) return;
@@ -488,7 +508,7 @@ void post_config_save() {
 }
 //********************************************************************************
 // Save [POST] body -> SecuritySettings, Settings
-// used by post_config_save
+// used by post_config_save   (shared with json API and HTML)
 //********************************************************************************
 void post_config_save_no_pass() {
   if (!isLoggedInApi()) return;
@@ -567,6 +587,147 @@ void post_config_save_no_pass() {
     SaveSettings();
   }
 }
+
+//********************************************************************************
+// Web Interface hardware page - save data  (shared with json API and HTML)
+//********************************************************************************
+void hardware_save() {
+  String pin_i2c_sda = WebServer.arg("psda");
+  String pin_i2c_scl = WebServer.arg("pscl");
+
+  if (pin_i2c_sda.length() != 0) {
+    Settings.Pin_i2c_sda     = pin_i2c_sda.toInt();
+    Settings.Pin_i2c_scl     = pin_i2c_scl.toInt();
+    Settings.PinStates[0] =  WebServer.arg("p0").toInt();
+    Settings.PinStates[2] =  WebServer.arg("p2").toInt();
+    Settings.PinStates[4] =  WebServer.arg("p4").toInt();
+    Settings.PinStates[5] =  WebServer.arg("p5").toInt();
+    Settings.PinStates[9] =  WebServer.arg("p9").toInt();
+    Settings.PinStates[10] =  WebServer.arg("p10").toInt();
+    Settings.PinStates[12] =  WebServer.arg("p12").toInt();
+    Settings.PinStates[13] =  WebServer.arg("p13").toInt();
+    Settings.PinStates[14] =  WebServer.arg("p14").toInt();
+    Settings.PinStates[15] =  WebServer.arg("p15").toInt();
+    Settings.PinStates[16] =  WebServer.arg("p16").toInt();
+
+    SaveSettings();
+  }
+
+}
+//********************************************************************************
+// [post] device_save (shared with json API and HTML)
+//********************************************************************************
+void device_save() {
+
+  char tmpString[41];
+  struct EventStruct TempEvent;
+
+  String taskindex = WebServer.arg("index");
+  String taskdevicenumber = WebServer.arg("taskdevicenumber");
+  String taskdeviceid = WebServer.arg("taskdeviceid");
+  String taskdevicepin1 = WebServer.arg("taskdevicepin1");
+  String taskdevicepin2 = WebServer.arg("taskdevicepin2");
+  String taskdevicepin3 = WebServer.arg("taskdevicepin3");
+  String taskdevicepin1pullup = WebServer.arg("taskdevicepin1pullup");
+  String taskdevicepin1inversed = WebServer.arg("taskdevicepin1inversed");
+  String taskdevicename = WebServer.arg("taskdevicename");
+  String taskdeviceport = WebServer.arg("taskdeviceport");
+  String taskdeviceformula[VARS_PER_TASK];
+  String taskdevicevaluename[VARS_PER_TASK];
+  String taskdevicesenddata = WebServer.arg("taskdevicesenddata");
+  String taskdeviceglobalsync = WebServer.arg("taskdeviceglobalsync");
+
+  for (byte varNr = 0; varNr < VARS_PER_TASK; varNr++)
+  {
+    char argc[25];
+    String arg = "taskdeviceformula";
+    arg += varNr + 1;
+    arg.toCharArray(argc, 25);
+    taskdeviceformula[varNr] = WebServer.arg(argc);
+
+    arg = "taskdevicevaluename";
+    arg += varNr + 1;
+    arg.toCharArray(argc, 25);
+    taskdevicevaluename[varNr] = WebServer.arg(argc);
+  }
+
+  String edit = WebServer.arg("edit");
+  byte index = taskindex.toInt();
+  byte DeviceIndex = 0;
+
+  if (edit.toInt() != 0)
+  {
+    if (Settings.TaskDeviceNumber[index - 1] != taskdevicenumber.toInt()) // change of device, clear all other values
+    {
+      taskClear(index - 1, false); // clear settings, but do not save
+      Settings.TaskDeviceNumber[index - 1] = taskdevicenumber.toInt();
+    }
+    else if (taskdevicenumber.toInt() != 0)
+    {
+      Settings.TaskDeviceNumber[index - 1] = taskdevicenumber.toInt();
+      DeviceIndex = getDeviceIndex(Settings.TaskDeviceNumber[index - 1]);
+      taskdevicename.toCharArray(tmpString, 26);
+      strcpy(ExtraTaskSettings.TaskDeviceName, tmpString);
+      Settings.TaskDevicePort[index - 1] = taskdeviceport.toInt();
+      if (Settings.TaskDeviceNumber[index - 1] != 0)
+        Settings.TaskDeviceID[index - 1] = taskdeviceid.toInt();
+      else
+        Settings.TaskDeviceID[index - 1] = 0;
+      if (Device[DeviceIndex].Type == DEVICE_TYPE_SINGLE)
+      {
+        Settings.TaskDevicePin1[index - 1] = taskdevicepin1.toInt();
+      }
+      if (Device[DeviceIndex].Type == DEVICE_TYPE_DUAL)
+      {
+        Settings.TaskDevicePin1[index - 1] = taskdevicepin1.toInt();
+        Settings.TaskDevicePin2[index - 1] = taskdevicepin2.toInt();
+      }
+
+      if (taskdevicepin3.length() != 0)
+        Settings.TaskDevicePin3[index - 1] = taskdevicepin3.toInt();
+
+      if (Device[DeviceIndex].PullUpOption)
+        Settings.TaskDevicePin1PullUp[index - 1] = (taskdevicepin1pullup == "on");
+
+      if (Device[DeviceIndex].InverseLogicOption)
+        Settings.TaskDevicePin1Inversed[index - 1] = (taskdevicepin1inversed == "on");
+
+      if (Device[DeviceIndex].SendDataOption)
+        Settings.TaskDeviceSendData[index - 1] = (taskdevicesenddata == "on");
+
+      if (Device[DeviceIndex].GlobalSyncOption)
+        Settings.TaskDeviceGlobalSync[index - 1] = (taskdeviceglobalsync == "on");
+
+      // Send task info if set global
+      if (Settings.TaskDeviceGlobalSync[index - 1])
+      {
+        Serial.println("Sending UDP Task info");
+        SendUDPTaskInfo(0, index - 1, index - 1);
+      }
+
+      for (byte varNr = 0; varNr < Device[DeviceIndex].ValueCount; varNr++)
+      {
+        taskdeviceformula[varNr].toCharArray(tmpString, 41);
+        strcpy(ExtraTaskSettings.TaskDeviceFormula[varNr], tmpString);
+      }
+
+      // task value names handling.
+      TempEvent.TaskIndex = index - 1;
+      for (byte varNr = 0; varNr < Device[DeviceIndex].ValueCount; varNr++)
+      {
+        taskdevicevaluename[varNr].toCharArray(tmpString, 26);
+        strcpy(ExtraTaskSettings.TaskDeviceValueNames[varNr], tmpString);
+      }
+      TempEvent.TaskIndex = index - 1;
+      PluginCall(PLUGIN_WEBFORM_SAVE, &TempEvent, dummyString);
+      PluginCall(PLUGIN_INIT, &TempEvent, dummyString);
+    }
+    SaveTaskSettings(index - 1);
+    SaveSettings();
+  }
+
+}
+
 #if !DISABLE_HTML
 
 //********************************************************************************
@@ -713,33 +874,6 @@ void handle_config() {
 #endif //MEMORY_PROFILING
 }
 
-
-//********************************************************************************
-// Web Interface hardware page - save data
-//********************************************************************************
-void hardware_save() {
-  String pin_i2c_sda = WebServer.arg("psda");
-  String pin_i2c_scl = WebServer.arg("pscl");
-
-  if (pin_i2c_sda.length() != 0) {
-    Settings.Pin_i2c_sda     = pin_i2c_sda.toInt();
-    Settings.Pin_i2c_scl     = pin_i2c_scl.toInt();
-    Settings.PinStates[0] =  WebServer.arg("p0").toInt();
-    Settings.PinStates[2] =  WebServer.arg("p2").toInt();
-    Settings.PinStates[4] =  WebServer.arg("p4").toInt();
-    Settings.PinStates[5] =  WebServer.arg("p5").toInt();
-    Settings.PinStates[9] =  WebServer.arg("p9").toInt();
-    Settings.PinStates[10] =  WebServer.arg("p10").toInt();
-    Settings.PinStates[12] =  WebServer.arg("p12").toInt();
-    Settings.PinStates[13] =  WebServer.arg("p13").toInt();
-    Settings.PinStates[14] =  WebServer.arg("p14").toInt();
-    Settings.PinStates[15] =  WebServer.arg("p15").toInt();
-    Settings.PinStates[16] =  WebServer.arg("p16").toInt();
-
-    SaveSettings();
-  }
-
-}
 //********************************************************************************
 // Web Interface hardware page
 //********************************************************************************
@@ -829,7 +963,6 @@ void addPinStateSelect(String& str, String name,  int choice)
   str += F("</select>");
 }
 
-
 //********************************************************************************
 // Web Interface device page
 //********************************************************************************
@@ -841,39 +974,10 @@ void handle_devices() {
 
   if (!isLoggedIn()) return;
 
-  char tmpString[41];
+  device_save();
+
   struct EventStruct TempEvent;
 
-  String taskindex = WebServer.arg("index");
-  String taskdevicenumber = WebServer.arg("taskdevicenumber");
-  String taskdeviceid = WebServer.arg("taskdeviceid");
-  String taskdevicepin1 = WebServer.arg("taskdevicepin1");
-  String taskdevicepin2 = WebServer.arg("taskdevicepin2");
-  String taskdevicepin3 = WebServer.arg("taskdevicepin3");
-  String taskdevicepin1pullup = WebServer.arg("taskdevicepin1pullup");
-  String taskdevicepin1inversed = WebServer.arg("taskdevicepin1inversed");
-  String taskdevicename = WebServer.arg("taskdevicename");
-  String taskdeviceport = WebServer.arg("taskdeviceport");
-  String taskdeviceformula[VARS_PER_TASK];
-  String taskdevicevaluename[VARS_PER_TASK];
-  String taskdevicesenddata = WebServer.arg("taskdevicesenddata");
-  String taskdeviceglobalsync = WebServer.arg("taskdeviceglobalsync");
-
-  for (byte varNr = 0; varNr < VARS_PER_TASK; varNr++)
-  {
-    char argc[25];
-    String arg = "taskdeviceformula";
-    arg += varNr + 1;
-    arg.toCharArray(argc, 25);
-    taskdeviceformula[varNr] = WebServer.arg(argc);
-
-    arg = "taskdevicevaluename";
-    arg += varNr + 1;
-    arg.toCharArray(argc, 25);
-    taskdevicevaluename[varNr] = WebServer.arg(argc);
-  }
-
-  String edit = WebServer.arg("edit");
   byte page = WebServer.arg("page").toInt();
   if (page == 0)
     page = 1;
@@ -885,81 +989,11 @@ void handle_devices() {
     else
       page = TASKS_MAX / 4;
   }
-
+  byte DeviceIndex = 0;
+  String taskindex = WebServer.arg("index");
   byte index = taskindex.toInt();
 
-  byte DeviceIndex = 0;
 
-  if (edit.toInt() != 0)
-  {
-    if (Settings.TaskDeviceNumber[index - 1] != taskdevicenumber.toInt()) // change of device, clear all other values
-    {
-      taskClear(index - 1, false); // clear settings, but do not save
-      Settings.TaskDeviceNumber[index - 1] = taskdevicenumber.toInt();
-    }
-    else if (taskdevicenumber.toInt() != 0)
-    {
-      Settings.TaskDeviceNumber[index - 1] = taskdevicenumber.toInt();
-      DeviceIndex = getDeviceIndex(Settings.TaskDeviceNumber[index - 1]);
-      taskdevicename.toCharArray(tmpString, 26);
-      strcpy(ExtraTaskSettings.TaskDeviceName, tmpString);
-      Settings.TaskDevicePort[index - 1] = taskdeviceport.toInt();
-      if (Settings.TaskDeviceNumber[index - 1] != 0)
-        Settings.TaskDeviceID[index - 1] = taskdeviceid.toInt();
-      else
-        Settings.TaskDeviceID[index - 1] = 0;
-      if (Device[DeviceIndex].Type == DEVICE_TYPE_SINGLE)
-      {
-        Settings.TaskDevicePin1[index - 1] = taskdevicepin1.toInt();
-      }
-      if (Device[DeviceIndex].Type == DEVICE_TYPE_DUAL)
-      {
-        Settings.TaskDevicePin1[index - 1] = taskdevicepin1.toInt();
-        Settings.TaskDevicePin2[index - 1] = taskdevicepin2.toInt();
-      }
-
-      if (taskdevicepin3.length() != 0)
-        Settings.TaskDevicePin3[index - 1] = taskdevicepin3.toInt();
-
-      if (Device[DeviceIndex].PullUpOption)
-        Settings.TaskDevicePin1PullUp[index - 1] = (taskdevicepin1pullup == "on");
-
-      if (Device[DeviceIndex].InverseLogicOption)
-        Settings.TaskDevicePin1Inversed[index - 1] = (taskdevicepin1inversed == "on");
-
-      if (Device[DeviceIndex].SendDataOption)
-        Settings.TaskDeviceSendData[index - 1] = (taskdevicesenddata == "on");
-
-      if (Device[DeviceIndex].GlobalSyncOption)
-        Settings.TaskDeviceGlobalSync[index - 1] = (taskdeviceglobalsync == "on");
-
-      // Send task info if set global
-      if (Settings.TaskDeviceGlobalSync[index - 1])
-      {
-        Serial.println("Sending UDP Task info");
-        SendUDPTaskInfo(0, index - 1, index - 1);
-      }
-
-      for (byte varNr = 0; varNr < Device[DeviceIndex].ValueCount; varNr++)
-      {
-        taskdeviceformula[varNr].toCharArray(tmpString, 41);
-        strcpy(ExtraTaskSettings.TaskDeviceFormula[varNr], tmpString);
-      }
-
-      // task value names handling.
-      TempEvent.TaskIndex = index - 1;
-      for (byte varNr = 0; varNr < Device[DeviceIndex].ValueCount; varNr++)
-      {
-        taskdevicevaluename[varNr].toCharArray(tmpString, 26);
-        strcpy(ExtraTaskSettings.TaskDeviceValueNames[varNr], tmpString);
-      }
-      TempEvent.TaskIndex = index - 1;
-      PluginCall(PLUGIN_WEBFORM_SAVE, &TempEvent, dummyString);
-      PluginCall(PLUGIN_INIT, &TempEvent, dummyString);
-    }
-    SaveTaskSettings(index - 1);
-    SaveSettings();
-  }
 
   String reply = "";
   addHeader(true, reply);

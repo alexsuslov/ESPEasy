@@ -173,6 +173,18 @@ void handle_api_config_post() {
   handle_api_config_json();
 
 }
+//********************************************************************************
+// API [POST] device
+// save device
+// @return [json] device
+//********************************************************************************
+void handle_api_device_post() {
+
+  device_save();
+  handle_api_device_json();
+
+}
+
 
 //********************************************************************************
 // API [POST] password
@@ -379,9 +391,16 @@ void handle_api_device_json() {
   if (!isLoggedInApi()) return;
 
   struct EventStruct TempEvent;
-  String taskindex  = WebServer.arg("i");
+  String taskindex  = WebServer.arg("index");
   byte index = taskindex.toInt();
 
+// !!! delete in production
+  if ((index < 1) || (index > TASKS_MAX)) {
+    WebServer.send(500);
+    return;
+  }
+
+  index --;
   LoadTaskSettings(index);
 
   if (ExtraTaskSettings.TaskDeviceValueNames[0][0] == 0) {
@@ -398,19 +417,19 @@ void handle_api_device_json() {
   // open json
   String reply = F("{");
 
-  reply +=        json_number(F("TaskDeviceNumber"),       String( Settings.TaskDeviceNumber[index] )      ); // byte [TASKS_MAX]
-  reply = reply + F(",") + json_string(F("DeviceName"),             deviceName                                      ); // String
-  reply = reply + F(",") + json_number(F("TaskIndex"),              index                                           ); // byte  [TASKS_MAX]
-  reply = reply + F(",") + json_string(F("TaskDeviceName"),         String( ExtraTaskSettings.TaskDeviceName )      ); // char[26]
-  reply = reply + F(",") + json_number(F("TaskDeviceID"),           String( Settings.TaskDeviceID[index])           ); // unsigned int [TASKS_MAX]
-  reply = reply + F(",") + json_number(F("TaskDevicePin1"),         Settings.TaskDevicePin1[index]                  ); // int8_t [TASKS_MAX]
-  reply = reply + F(",") + json_number(F("TaskDevicePin2"),         Settings.TaskDevicePin2[index]                  ); // int8_t [TASKS_MAX]
-  reply = reply + F(",") + json_number(F("TaskDevicePin3"),         Settings.TaskDevicePin3[index]                  ); // int8_t [TASKS_MAX]
-  reply = reply + F(",") + json_number(F("TaskDevicePin1PullUp"),   Settings.TaskDevicePin1PullUp[index]            ); // boolean [TASKS_MAX]
-  reply = reply + F(",") + json_number(F("TaskDevicePin1Inversed"), Settings.TaskDevicePin1Inversed[index]          ); // boolean [TASKS_MAX]
-  reply = reply + F(",") + json_number(F("TaskDevicePort"),         Settings.TaskDevicePort[index]                  ); // byte [TASKS_MAX]
-  reply = reply + F(",") + json_number(F("TaskDeviceSendData"),     Settings.TaskDeviceSendData[index]              ); // boolean [TASKS_MAX]
-  reply = reply + F(",") + json_number(F("TaskDeviceGlobalSync"),   Settings.TaskDeviceGlobalSync[index]            ); // boolean [TASKS_MAX]
+  reply +=        json_number(F("taskdevicenumber"),       String( Settings.TaskDeviceNumber[index] )      ); // byte [TASKS_MAX]
+  reply = reply + F(",") + json_string(F("devicename"),             deviceName                                      ); // String
+  reply = reply + F(",") + json_number(F("index"), index); // byte  [TASKS_MAX]
+  reply = reply + F(",") + json_string(F("taskdevicename"),         String( ExtraTaskSettings.TaskDeviceName )      ); // char[26]
+  reply = reply + F(",") + json_number(F("taskdeviceid"),           String( Settings.TaskDeviceID[index])           ); // unsigned int [TASKS_MAX]
+  reply = reply + F(",") + json_number(F("taskdevicepin1"),         Settings.TaskDevicePin1[index]                  ); // int8_t [TASKS_MAX]
+  reply = reply + F(",") + json_number(F("taskdevicepin2"),         Settings.TaskDevicePin2[index]                  ); // int8_t [TASKS_MAX]
+  reply = reply + F(",") + json_number(F("taskdevicepin3"),         Settings.TaskDevicePin3[index]                  ); // int8_t [TASKS_MAX]
+  reply = reply + F(",") + json_number(F("taskdevicepin1pullup"),   Settings.TaskDevicePin1PullUp[index]            ); // boolean [TASKS_MAX]
+  reply = reply + F(",") + json_number(F("taskdevicepin1inversed"), Settings.TaskDevicePin1Inversed[index]          ); // boolean [TASKS_MAX]
+  reply = reply + F(",") + json_number(F("taskdeviceport"),         Settings.TaskDevicePort[index]                  ); // byte [TASKS_MAX]
+  reply = reply + F(",") + json_number(F("taskdevicesenddata"),     Settings.TaskDeviceSendData[index]              ); // boolean [TASKS_MAX]
+  reply = reply + F(",") + json_number(F("taskdeviceglobalsync"),   Settings.TaskDeviceGlobalSync[index]            ); // boolean [TASKS_MAX]
 
   reply = reply + F(",\"Tasks\":[");
   String comma = F(",");
@@ -420,16 +439,16 @@ void handle_api_device_json() {
           if (varNr > 0) {
             reply += comma;
           }
-          reply = reply + F("{\"TaskDeviceValueName\":\"");
+          reply = reply + F("{\"taskdevicevaluename\":\"");
           reply += ExtraTaskSettings.TaskDeviceValueNames[varNr]; // char TaskDeviceValueNames[VARS_PER_TASK][26]
           reply = reply + F("\"");
 //        if (Device[DeviceIndex].FormulaOption)
           reply += comma;
-          reply = reply + F("\"TaskDeviceFormula\":\"");
+          reply = reply + F("\"taskdeviceformula\":\"");
           reply += ExtraTaskSettings.TaskDeviceFormula[varNr]; // char TaskDeviceFormula[VARS_PER_TASK][41];
           reply = reply + F("\"");
           reply += comma;
-          reply = reply + F("\"TaskDeviceValue\":\"");
+          reply = reply + F("\"taskdevicevalue\":\"");
           reply += UserVar[index * VARS_PER_TASK + varNr]; // float UserVar[VARS_PER_TASK * TASKS_MAX];
           reply = reply + F("\"}");
         }
@@ -740,5 +759,30 @@ void handle_api_advanced() {
   WebServer.send(200, FPSTR(APPLICATION_JSON), reply );
 
 } // handle_api_advanced
+//********************************************************************************
+// [get] handle_api_protocols
+//********************************************************************************
+void handle_api_protocols() {
+//  if (!isLoggedInApi()) return;
+  String reply = F("[");
+  for (byte x = 0; x <= protocolCount; x++)  {
+    if ( x > 0 ) {
+      reply = reply + F(",{");
+    } else {
+      reply = reply + F("{");
+    }
+    reply = reply          + json_string(F("Number"     ), String(Protocol[x].Number      ) );
+    reply = reply + F(",") + json_string(F("Name"       ), String(Protocol[x].Name        ) );
+    reply = reply + F(",") + json_string(F("MQTT"       ), String(Protocol[x].usesMQTT    ) );
+    reply = reply + F(",") + json_string(F("Account"    ), String(Protocol[x].usesAccount ) );
+    reply = reply + F(",") + json_string(F("Password"   ), String(Protocol[x].usesPassword) );
+    reply = reply + F(",") + json_string(F("defaultPort"), String(Protocol[x].defaultPort ) );
+    reply = reply + F("}");
+  }
+
+  reply = reply + F("]");
+  WebServer.send(200, FPSTR(APPLICATION_JSON), reply );
+
+} // handle_api_protocols
 
 #endif // FEATURE_API
