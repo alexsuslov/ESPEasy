@@ -1,27 +1,30 @@
 #if FEATURE_API
-
   // urls
-  const char api              [] = "/api/";
-  const char api_hardware     [] = "/api/hardware";
-  const char api_config       [] = "/api/config";
-  const char api_devices      [] = "/api/devices";
-  const char api_device       [] = "/api/device";
-  const char api_wifiscanner  [] = "/api/wifiscanner";
-  const char api_auth         [] = "/api/auth";
-  const char api_log          [] = "/api/log";
-  const char api_pass         [] = "/api/pass";
+  const char api             [] PROGMEM = "/api/";
+  const char api_hardware    [] PROGMEM = "/api/hardware";
+  const char api_config      [] PROGMEM = "/api/config";
+  const char api_devices     [] PROGMEM = "/api/devices";
+  const char api_device      [] PROGMEM = "/api/device";
+  const char api_wifiscanner [] PROGMEM = "/api/wifiscanner";
+  const char api_auth        [] PROGMEM = "/api/auth";
+  const char api_log         [] PROGMEM = "/api/log";
+  const char api_pass        [] PROGMEM = "/api/pass";
+  const char api_i2c         [] PROGMEM = "/api/i2c";
+  const char api_cmd     [] PROGMEM = "/api/cmd";
+  const char api_advanced    [] PROGMEM = "/api/advanced";
 
 #endif // FEATURE_API
+
 #if MEMORY_PROFILING
   void handle_api_root_mem() {
     Serial_memory_log("handle_api_root","start");
     handle_api_root();
     Serial_memory_log("handle_api_root","end");
   }
-  void handle_api_config_options_mem() {
-    Serial_memory_log("handle_api_config_options","start");
-    handle_api_config_options();
-    Serial_memory_log("handle_api_config_options","end");
+  void handle_api_options_mem() {
+    Serial_memory_log("handle_api_options","start");
+    handle_api_options();
+    Serial_memory_log("handle_api_options","end");
   }
   void handle_api_config_post_mem() {
     Serial_memory_log("handle_api_config_post","start");
@@ -73,10 +76,15 @@
     handle_api_i2cscanner();
     Serial_memory_log("handle_api_i2cscanner","end");
   }
-  void handle_api_command_mem() {
-    Serial_memory_log("handle_api_command","start");
-    handle_api_command();
-    Serial_memory_log("handle_api_command","end");
+  void handle_api_cmd_mem() {
+    Serial_memory_log("handle_api_cmd","start");
+    handle_api_cmd();
+    Serial_memory_log("handle_api_cmd","end");
+  }
+  void handle_api_advanced_mem() {
+    Serial_memory_log("handle_api_advanced","start");
+    handle_api_advanced();
+    Serial_memory_log("handle_api_advanced","end");
   }
 #endif //MEMORY_PROFILING
 
@@ -91,18 +99,18 @@ void WebServerInit()
   // [get][options][post] api  json
   // @return status 204 || 401
   WebServer.on( api, HTTP_GET, handle_api_root_mem);
-  WebServer.on( api, HTTP_OPTIONS, handle_api_config_options_mem);
+  WebServer.on( api, HTTP_OPTIONS, handle_api_options_mem);
   WebServer.on( api, HTTP_POST, handle_auth_api_mem);
 
   // [get]/api/config
   WebServer.on( api_config, HTTP_GET, handle_api_config_json_mem);
   WebServer.on( api_config, HTTP_POST, handle_api_config_post_mem);
-  WebServer.on( api_config, HTTP_OPTIONS, handle_api_config_options_mem);
+  WebServer.on( api_config, HTTP_OPTIONS, handle_api_options_mem);
 
   // [get][options][post] /api/hardware json
   WebServer.on( api_hardware, HTTP_GET, handle_api_hardware_json_mem);
   WebServer.on( api_hardware, HTTP_POST, handle_api_hardware_json_mem);
-  WebServer.on( api_hardware, HTTP_OPTIONS, handle_api_hardware_json_mem);
+  WebServer.on( api_hardware, HTTP_OPTIONS, handle_api_options_mem);
 
   // [get]/api/devices json
   WebServer.on( api_devices, HTTP_GET, handle_api_devices_json_mem);
@@ -110,39 +118,45 @@ void WebServerInit()
   // [get][options][post] /api/device?index=1 json
   WebServer.on( api_device, HTTP_GET, handle_api_device_json_mem);
   WebServer.on( api_device, HTTP_POST, handle_api_device_json_mem);
-  WebServer.on( api_device, HTTP_OPTIONS, handle_api_device_json_mem);
+  WebServer.on( api_device, HTTP_OPTIONS, handle_api_options_mem);
 
   // [get]/api/wifiscanner json
   WebServer.on( api_wifiscanner, HTTP_GET, handle_api_wifiscanner_json_mem);
 
   // [get]/api/i2cscanner json
-  WebServer.on("/api/i2c", handle_api_i2cscanner_mem);
+  WebServer.on( api_i2c, handle_api_i2cscanner_mem);
 
   // [get][options][post] /api/log
-  WebServer.on( api_log, HTTP_OPTIONS, handle_api_config_options_mem);
+  WebServer.on( api_log, HTTP_OPTIONS, handle_api_options_mem);
   WebServer.on( api_log, HTTP_GET, handle_api_log_mem);
   WebServer.on( api_log, HTTP_POST, handle_api_pass_post_mem);
 
-  // [get]/api/command json
-  WebServer.on("/api/command", handle_api_command_mem);
+  // [post]/api/command json
+  WebServer.on( api_cmd, HTTP_POST, handle_api_cmd_mem);
+  WebServer.on( api_cmd, HTTP_OPTIONS, handle_api_options_mem);
+
+  // [get][options][post] /api/advanced
+  WebServer.on( api_advanced, HTTP_GET, handle_api_advanced_mem);
+  WebServer.on( api_advanced, HTTP_POST, handle_api_advanced_mem);
+  WebServer.on( api_advanced, HTTP_OPTIONS, handle_api_options_mem);
 
 #else //MEMORY_PROFILING
   // [get][options][post] api  json
   // @return status 204 || 401
   WebServer.on( api, HTTP_GET, handle_api_root);
-  WebServer.on( api, HTTP_OPTIONS, handle_api_config_options);
+  WebServer.on( api, HTTP_OPTIONS, handle_api_options);
   WebServer.on( api, HTTP_POST, handle_auth_api);
 
 
   // [get]/api/config
   WebServer.on( api_config, HTTP_GET, handle_api_config_json);
   WebServer.on( api_config, HTTP_POST, handle_api_config_post);
-  WebServer.on( api_config, HTTP_OPTIONS, handle_api_config_options);
+  WebServer.on( api_config, HTTP_OPTIONS, handle_api_options);
 
   // [get][options][post] /api/hardware json
   WebServer.on( api_hardware, HTTP_GET, handle_api_hardware_json);
   WebServer.on( api_hardware, HTTP_POST, handle_api_hardware_post);
-  WebServer.on( api_hardware, HTTP_OPTIONS, handle_api_config_options);
+  WebServer.on( api_hardware, HTTP_OPTIONS, handle_api_options);
 
   // [get]/api/devices json
   WebServer.on( api_devices, HTTP_GET, handle_api_devices_json);
@@ -150,20 +164,25 @@ void WebServerInit()
   // [get][options][post] /api/device?index=1 json
   WebServer.on( api_device, HTTP_GET, handle_api_device_json);
   WebServer.on( api_device, HTTP_POST, handle_api_device_json);
-  WebServer.on( api_device, HTTP_OPTIONS, handle_api_config_options);
+  WebServer.on( api_device, HTTP_OPTIONS, handle_api_options);
 
   // [get]/api/wifiscanner json
   WebServer.on( api_wifiscanner, HTTP_GET, handle_api_wifiscanner_json);
   // [get]/api/i2cscanner json
-  WebServer.on("/api/i2c", handle_api_i2cscanner);
+  WebServer.on( api_i2c, HTTP_GET, handle_api_i2cscanner);
 
   // [get][options][post] /api/log
-  WebServer.on( api_log, HTTP_OPTIONS, handle_api_config_options);
+  WebServer.on( api_log, HTTP_OPTIONS, handle_api_options);
   WebServer.on( api_log, HTTP_GET, handle_api_log);
   WebServer.on( api_log, HTTP_POST, handle_api_pass_post);
 
   // [get]/api/command json
-  WebServer.on("/api/command", handle_api_command);
+  WebServer.on( api_cmd, handle_api_cmd);
+
+  // [get][options][post] /api/advanced
+  WebServer.on( api_advanced, HTTP_GET, handle_api_advanced);
+  WebServer.on( api_advanced, HTTP_POST, handle_api_advanced);
+  WebServer.on( api_advanced, HTTP_OPTIONS, handle_api_options);
 
 #endif //MEMORY_PROFILING
 #endif //FEATURE_API
@@ -299,7 +318,7 @@ void handle_root() {
   // if Wifi setup, launch setup wizard
   if (wifiSetup)
   {
-    WebServer.send(200, FPSTR(text_html), "<meta HTTP-EQUIV='REFRESH' content='0; url=http://192.168.4.1/setup'>");
+    WebServer.send(200, FPSTR(TEXT_HTML), "<meta HTTP-EQUIV='REFRESH' content='0; url=http://192.168.4.1/setup'>");
     //WebServer.send(200, "text/html", "<a class=\"button-menu\" href=\"setup\">Setup</a>");
     return;
   }
@@ -416,7 +435,7 @@ void handle_root() {
 
     reply += F("</table></form>");
     addFooter(reply);
-    WebServer.send(200, FPSTR(text_html), reply);
+    WebServer.send(200, FPSTR(TEXT_HTML), reply);
     printWebString = "";
     printToWeb = false;
   }
@@ -439,7 +458,7 @@ void handle_root() {
       cmd_within_mainloop = CMD_REBOOT;
     }
 
-    WebServer.send(200, FPSTR(text_html), "OK");
+    WebServer.send(200, FPSTR(TEXT_HTML), "OK");
   }
 #if MEMORY_PROFILING
   Serial_memory_log("handle_root","");
@@ -682,7 +701,7 @@ void handle_config() {
   reply += F("'><TR><TD><TD><input class=\"button-link\" type='submit' value='Submit'>");
   reply += F("</table></form>");
   addFooter(reply);
-  WebServer.send(200, FPSTR(text_html), reply);
+  WebServer.send(200, FPSTR(TEXT_HTML), reply);
 
 #if MEMORY_PROFILING
   Serial_memory_log("handle_config","");
@@ -765,7 +784,7 @@ void handle_hardware() {
 
   reply += F("</table></form>");
   addFooter(reply);
-  WebServer.send(200, FPSTR(text_html), reply);
+  WebServer.send(200, FPSTR(TEXT_HTML), reply);
 
 #if MEMORY_PROFILING
   Serial_memory_log("handle_hardware","");
@@ -1186,7 +1205,7 @@ void handle_devices() {
   }
 
   addFooter(reply);
-  WebServer.send(200, FPSTR(text_html), reply);
+  WebServer.send(200, FPSTR(TEXT_HTML), reply);
 #if MEMORY_PROFILING
   Serial_memory_log("handle_devices","");
 #endif //MEMORY_PROFILING
@@ -1468,7 +1487,7 @@ void handle_log() {
   }
   reply += F("</table>");
   addFooter(reply);
-  WebServer.send(200, FPSTR(text_html), reply);
+  WebServer.send(200, FPSTR(TEXT_HTML), reply);
 
 #if MEMORY_PROFILING
   Serial_memory_log("handle_log","");
@@ -1525,7 +1544,7 @@ void handle_tools() {
   reply += printWebString;
   reply += F("</table></form>");
   addFooter(reply);
-  WebServer.send(200, FPSTR(text_html), reply);
+  WebServer.send(200, FPSTR(TEXT_HTML), reply);
   printWebString = "";
   printToWeb = false;
 }
@@ -1608,7 +1627,7 @@ void handle_i2cscanner() {
 
   reply += F("</table>");
   addFooter(reply);
-  WebServer.send(200, FPSTR(text_html), reply);
+  WebServer.send(200, FPSTR(TEXT_HTML), reply);
   free(TempString);
 }
 
@@ -1641,7 +1660,7 @@ void handle_wifiscanner() {
 
   reply += F("</table>");
   addFooter(reply);
-  WebServer.send(200, FPSTR(text_html), reply);
+  WebServer.send(200, FPSTR(TEXT_HTML), reply);
   free(TempString);
 }
 
@@ -1678,7 +1697,7 @@ void handle_login() {
     }
   }
 
-  WebServer.send(200, FPSTR(text_html), reply);
+  WebServer.send(200, FPSTR(TEXT_HTML), reply);
   printWebString = "";
   printToWeb = false;
 }
@@ -1716,7 +1735,7 @@ void handle_control() {
 
   reply += printWebString;
   reply += F("</table></form>");
-  WebServer.send(200, FPSTR(text_html), reply);
+  WebServer.send(200, FPSTR(TEXT_HTML), reply);
   printWebString = "";
   printToWeb = false;
 }
@@ -1797,7 +1816,7 @@ boolean handle_json()
   if (taskNr == 0 )
     reply += F("]}\n");
 
-  WebServer.send(200, FPSTR(application_json), reply);
+  WebServer.send(200, FPSTR(APPLICATION_JSON), reply);
 }
 
 
@@ -1936,7 +1955,7 @@ void handle_advanced() {
   reply += F("<input type='hidden' name='edit' value='1'>");
   reply += F("</table></form>");
   addFooter(reply);
-  WebServer.send(200, FPSTR(text_html), reply);
+  WebServer.send(200, FPSTR(TEXT_HTML), reply);
 }
 #endif //!DISABLE_HTML
 
@@ -2008,7 +2027,7 @@ void handle_upload() {
 
   reply += F("<form enctype=\"multipart/form-data\" method=\"post\"><p>Upload settings file:<br><input type=\"file\" name=\"datafile\" size=\"40\"></p><div><input class=\"button-link\" type='submit' value='Upload'></div><input type='hidden' name='edit' value='1'></form>");
   addFooter(reply);
-  WebServer.send(200, FPSTR(text_html), reply);
+  WebServer.send(200, FPSTR(TEXT_HTML), reply);
   printWebString = "";
   printToWeb = false;
 }
@@ -2101,14 +2120,14 @@ bool loadFromSPIFFS(String path) {
   if (path.endsWith("/")) path += "index.htm";
 
   if (path.endsWith(".src")) path = path.substring(0, path.lastIndexOf("."));
-  else if (path.endsWith(".htm")) dataType = text_html;
-  else if (path.endsWith(".css")) dataType = text_css;
-  else if (path.endsWith(".js")) dataType = application_javascript;
-  else if (path.endsWith(".png")) dataType = image_png;
-  else if (path.endsWith(".gif")) dataType = image_gif;
-  else if (path.endsWith(".jpg")) dataType = image_jpg;
-  else if (path.endsWith(".ico")) dataType = image_icon;
-  else if (path.endsWith(".txt")) dataType = application_stream;
+  else if (path.endsWith(".htm")) dataType = TEXT_HTML;
+  else if (path.endsWith(".css")) dataType = TEXT_CSS;
+  else if (path.endsWith(".js")) dataType = APPLICATION_JAVASCRIPT;
+  else if (path.endsWith(".png")) dataType = IMAGE_PNG;
+  else if (path.endsWith(".gif")) dataType = IMAGE_GIF;
+  else if (path.endsWith(".jpg")) dataType = IMAGE_JPG;
+  else if (path.endsWith(".ico")) dataType = IMAGE_ICON;
+  else if (path.endsWith(".txt")) dataType = APPLICATION_STREAM;
 
   path = path.substring(1);
   File dataFile = SPIFFS.open(path.c_str(), "r");
@@ -2163,7 +2182,7 @@ void handle_filelist() {
   }
   reply += F("</table></form>");
   addFooter(reply);
-  WebServer.send(200, FPSTR(text_html), reply);
+  WebServer.send(200, FPSTR(TEXT_HTML), reply);
 }
 
 #else
@@ -2195,7 +2214,7 @@ void handle_download() {
   */
   WebServer.setContentLength(32768);
   WebServer.sendHeader("Content-Disposition", "attachment; filename=config.txt");
-  WebServer.send(200, FPSTR(application_stream), "");
+  WebServer.send(200, FPSTR(APPLICATION_STREAM), "");
 
   for (uint32_t _sector = _sectorStart; _sector < _sectorEnd; _sector++)
   {
@@ -2235,7 +2254,7 @@ void handle_css() {
     }
   WiFiClient client = WebServer.client();
   WebServer.setContentLength(size);
-  WebServer.send(200,  FPSTR(text_css), "");
+  WebServer.send(200,  FPSTR(TEXT_CSS), "");
   client.write((const char*)data, size);
   delete [] data;
 }
@@ -2251,7 +2270,7 @@ void handle_upload() {
   addHeader(true, reply);
   reply += F("<form enctype=\"multipart/form-data\" method=\"post\"><p>Upload settings:<br><input type=\"file\" name=\"datafile\" size=\"40\"></p><div><input class=\"button-link\" type='submit' value='Upload'></div></form>");
   addFooter(reply);
-  WebServer.send(200, FPSTR(text_html), reply);
+  WebServer.send(200, FPSTR(TEXT_HTML), reply);
   printWebString = "";
   printToWeb = false;
 }
@@ -2266,7 +2285,7 @@ void handle_upload_post() {
   addHeader(true, reply);
   reply += F("Upload finished");
   addFooter(reply);
-  WebServer.send(200, FPSTR(text_html), reply);
+  WebServer.send(200, FPSTR(TEXT_HTML), reply);
   printWebString = "";
   printToWeb = false;
 }
@@ -2355,7 +2374,7 @@ void handleNotFound() {
 
   if (wifiSetup)
   {
-    WebServer.send(200, FPSTR(text_html), "<meta HTTP-EQUIV='REFRESH' content='0; url=http://192.168.4.1/setup'>");
+    WebServer.send(200, FPSTR(TEXT_HTML), F("<meta HTTP-EQUIV='REFRESH' content='0; url=http://192.168.4.1/setup'>"));
     //WebServer.send(200, "text/html", "<a class=\"button-menu\" href=\"setup\">Setup</a>");
     return;
   }
@@ -2374,7 +2393,7 @@ void handleNotFound() {
   for (uint8_t i = 0; i < WebServer.args(); i++) {
     message += " NAME:" + WebServer.argName(i) + "\n VALUE:" + WebServer.arg(i) + "\n";
   }
-  WebServer.send(404, text_plain, message);
+  WebServer.send(404, FPSTR(TEXT_PLAIN), message);
 }
 
 #if !DISABLE_HTML
@@ -2399,7 +2418,7 @@ void handle_setup() {
     reply += host;
     reply += F("/config'>Proceed to main config</a>");
     addFooter(reply);
-    WebServer.send(200, FPSTR(text_html), reply);
+    WebServer.send(200, FPSTR(TEXT_HTML), reply);
     wifiSetup = false;
     WifiAPMode(false);
     return;
@@ -2501,7 +2520,7 @@ void handle_setup() {
 
   reply += F("</form>");
   addFooter(reply);
-  WebServer.send(200, FPSTR(text_html), reply);
+  WebServer.send(200, FPSTR(TEXT_HTML), reply);
   delay(10);
 }
 #endif //!DISABLE_HTML
