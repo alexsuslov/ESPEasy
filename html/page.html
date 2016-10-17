@@ -1,63 +1,41 @@
+<html><head><script>// create templates object
+const Tpl = {
+  // template item for access point list
+  Item: item => {
+    return `<tr>
+      <td>${ item[0] }</td>
+      <td>${ item[1] }</td>
+    </tr>`;
+  },
+  // template access point list
+  Items: tbody => {
+    return `<table>
+      <thead>
+        <tr>
+          <td>name</td>
+          <td>rsi</td>
+        </tr>
+      <thead>
+      <tbody>${ tbody }<tbody>
+    </table>`;
+  }
+};
 
-<html>
-  <head>
-    <script>
-  var App = {
-    menu:[
-      { href:'.', name: 'Main' },
-      { href:'config', name: 'Config' },
-      { href:'hardware', name: 'Hardware' },
-      { href:'devices', name: 'Devices' },
-      { href:'tools', name: 'Tools' },
-    ],
+const renderApList = items => {
+  const tbody = items.map(Tpl.Item).join('');
+  return Tpl.Items(tbody);
+};
+// test
+const aps = [['test', 10], ['test1', 50]];
+// console.log(renderApList(aps));
+window.onload = () => {
+  console.log('page loaded!');
+  const el = document.getElementById('container');
+  console.log(el);
+  el.innerHTML = renderApList(aps);
+};
 
-    renderMenuItem: function(item){
-      return ['<li class="menuItem">',
-        '<a href="',
-        item.href,
-        '">',
-        item.name,
-        '</a>'
-      '</li>']
-    },
-
-    renderMenu: function(){
-      self = this;
-      if(this.ops.UseRules)
-        this.menu.push({ href:'rules', name:'Rules' });
-      var elmMenu = document.getElementById('menu')
-      this.menu.forEach(function(item){
-        elmMenu.append(self.renderMenuItem(item));
-      });
-    },
-
-    setTitle: function(){
-      document.title = this.ops.title;
-      document.getElementById('title').innerHTML = 'Welcome to ESP Easy:' +
-        this.ops.title;
-      return this;
-    },
-
-    addCss: function(){
-      var link = document.createElement( "link" );
-      link.href = this.ops.css;
-      link.type = "text/css";
-      link.rel = "stylesheet";
-      link.media = "screen,print";
-      document.getElementsByTagName( "head" )[0].appendChild( link );
-      return this;
-    },
-
-    init:function(ops){
-      this.ops = ops;
-      if(ops.title) this.setTitle();
-      if(ops.css) this.addCss();
-      if(ops.menu) this.renderMenu();
-    },
-  };
-
-    </script>
-    <style>
+</script><style>
   * {
     font-family:sans-serif;
     font-size:12pt;
@@ -116,13 +94,4 @@
     height: 50px;
     align: right;
   }
-
-    </style>
-  </head>
-  <body>
-    <h1 id="title">Welcome to ESP Easy</h1><img src="esp.png" class="logo"/>
-    <div id="menu"></div>
-    <div id="container"></div>
-    <h6>Powered by www.esp8266.nu</h6>
-  </body>
-</html>
+</style></head><body><h1 id="title">Welcome to ESP Easy</h1><div id="menu"></div><div id="container"><div id="aps"></div></div><h6>Powered by www.esp8266.nu</h6></body></html>
