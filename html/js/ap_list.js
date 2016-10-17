@@ -7,8 +7,7 @@ const aps = [['test', 10], ['test1', 50]];
 // console.log(renderApList(aps));
 window.onload = () => {
   console.log('page loaded!');
-  const el = document.getElementById('container');
-  console.log(el);
+  const el = document.getElementById('aps');
   el.innerHTML = renderApList(aps);
 };
 

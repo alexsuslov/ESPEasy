@@ -57,3 +57,7 @@
     height: 50px;
     align: right;
   }
+  #container{
+    width: 480px;
+    margin: auto;
+  }

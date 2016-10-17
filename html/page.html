@@ -30,8 +30,7 @@ const aps = [['test', 10], ['test1', 50]];
 // console.log(renderApList(aps));
 window.onload = () => {
   console.log('page loaded!');
-  const el = document.getElementById('container');
-  console.log(el);
+  const el = document.getElementById('aps');
   el.innerHTML = renderApList(aps);
 };
 
@@ -94,4 +93,8 @@ window.onload = () => {
     height: 50px;
     align: right;
   }
-</style></head><body><h1 id="title">Welcome to ESP Easy</h1><div id="menu"></div><div id="container"><div id="aps"></div></div><h6>Powered by www.esp8266.nu</h6></body></html>
+  #container{
+    width: 480px;
+    margin: auto;
+  }
+</style></head><body><div id="container"><h1 id="title">Welcome to ESP Easy</h1><div id="menu"></div><div id="aps"></div><h6>Powered by www.esp8266.nu</h6></div></body></html>
