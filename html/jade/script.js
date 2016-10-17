@@ -1,13 +1,13 @@
-script.
+
   var App = {
     menu:[
-      {href:'.', name:'Main'}
-      {href:'config', name:'Config'}
-      {href:'hardware', name:'Hardware'}
-      {href:'devices', name:'Devices'}
-      {href:'rules', name:'Rules'}
-      {href:'tools', name:'Tools'}
+      { href:'.', name: 'Main' },
+      { href:'config', name: 'Config' },
+      { href:'hardware', name: 'Hardware' },
+      { href:'devices', name: 'Devices' },
+      { href:'tools', name: 'Tools' },
     ],
+
     renderMenuItem: function(item){
       return ['<li class="menuItem">',
         '<a href="',
@@ -17,22 +17,24 @@ script.
         '</a>'
       '</li>']
     },
-    
+
     renderMenu: function(){
       self = this;
+      if(this.ops.UseRules)
+        this.menu.push({ href:'rules', name:'Rules' });
       var elmMenu = document.getElementById('menu')
       this.menu.forEach(function(item){
         elmMenu.append(self.renderMenuItem(item));
       });
     },
-    
+
     setTitle: function(){
       document.title = this.ops.title;
-      document.getElementById('title').innerHTML = 'Welcome to ESP Easy:' + 
+      document.getElementById('title').innerHTML = 'Welcome to ESP Easy:' +
         this.ops.title;
       return this;
     },
-    
+
     addCss: function(){
       var link = document.createElement( "link" );
       link.href = this.ops.css;
@@ -42,11 +44,12 @@ script.
       document.getElementsByTagName( "head" )[0].appendChild( link );
       return this;
     },
-    
-    init:function(ops){
+
+    init: function(ops){
       this.ops = ops;
       if(ops.title) this.setTitle();
       if(ops.css) this.addCss();
       if(ops.menu) this.renderMenu();
+      return this;
     },
   };

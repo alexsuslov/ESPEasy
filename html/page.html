@@ -1,0 +1,128 @@
+
+<html>
+  <head>
+    <script>
+  var App = {
+    menu:[
+      { href:'.', name: 'Main' },
+      { href:'config', name: 'Config' },
+      { href:'hardware', name: 'Hardware' },
+      { href:'devices', name: 'Devices' },
+      { href:'tools', name: 'Tools' },
+    ],
+
+    renderMenuItem: function(item){
+      return ['<li class="menuItem">',
+        '<a href="',
+        item.href,
+        '">',
+        item.name,
+        '</a>'
+      '</li>']
+    },
+
+    renderMenu: function(){
+      self = this;
+      if(this.ops.UseRules)
+        this.menu.push({ href:'rules', name:'Rules' });
+      var elmMenu = document.getElementById('menu')
+      this.menu.forEach(function(item){
+        elmMenu.append(self.renderMenuItem(item));
+      });
+    },
+
+    setTitle: function(){
+      document.title = this.ops.title;
+      document.getElementById('title').innerHTML = 'Welcome to ESP Easy:' +
+        this.ops.title;
+      return this;
+    },
+
+    addCss: function(){
+      var link = document.createElement( "link" );
+      link.href = this.ops.css;
+      link.type = "text/css";
+      link.rel = "stylesheet";
+      link.media = "screen,print";
+      document.getElementsByTagName( "head" )[0].appendChild( link );
+      return this;
+    },
+
+    init:function(ops){
+      this.ops = ops;
+      if(ops.title) this.setTitle();
+      if(ops.css) this.addCss();
+      if(ops.menu) this.renderMenu();
+    },
+  };
+
+    </script>
+    <style>
+  * {
+    font-family:sans-serif;
+    font-size:12pt;
+  }
+  h1 {
+    font-size:16pt;
+    color:black;
+  }
+  h6 {
+    font-size:10pt;
+    color:black;
+    text-align:center;
+  }
+  .button-menu {
+    background-color:#ffffff;
+    color:blue;
+    margin: 10px;
+    text-decoration:none
+  }
+  .button-link {padding:5px 15px;
+    background-color:#0077dd;
+    color:#fff;
+    border:solid 1px #fff;
+    text-decoration:none
+  }
+  .button-menu:hover {
+    background:#ddddff;
+  }
+  .button-link:hover {
+    background:#369;
+  }
+  th {
+    padding:10px;
+    background-color:black;
+    color:#ffffff;}
+  td {
+    padding:7px;
+  }
+  table {
+    color:black;}
+  .div_l {
+    float: left;
+  }
+  .div_r {float: right;
+    margin: 2px;
+    padding: 1px 10px;
+    border-radius: 7px;
+    background-color:#080;
+    color:white;
+  }
+  .div_br {
+    clear: both;
+  }
+  .logo{
+    width: 50px;
+    height: 50px;
+    align: right;
+  }
+
+    </style>
+  </head>
+  <body>
+    <h1 id="title">Welcome to ESP Easy</h1><img src="esp.png" class="logo"/>
+    <div id="menu"></div>
+    <div id="container"></div>
+    <h6>Powered by www.esp8266.nu</h6>
+  </body>
+</html>
