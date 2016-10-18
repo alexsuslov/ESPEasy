@@ -5,8 +5,15 @@ html
     style
       include ./style.css
   body
-    h1#title Welcome to ESP Easy
-    img.logo(src="esp.png")
-    #menu
-    #container
-    h6 Powered by www.esp8266.nu
+    .container
+      form.form
+        h2 WIFI CONFIG
+        .input-group
+          label Access Point
+          input.form-control(type="text", name="ap")
+        .input-group
+          label Key
+          input#txtPassword.form-control(type="password", name="key")
+        button.btn.btn-lg.btn-primary.btn-block Go!
+        h6 Powered by www.esp8266.nu
+
