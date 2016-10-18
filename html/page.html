@@ -1,4 +1,27 @@
+<html><head><script>// create templates object
+const Tpl = {
+  // template item for access point list
+  Item: item => {
+    return `<tr>
+      <td>${ item[0] }</td>
+      <td>${ item[1] }</td>
+    </tr>`;
+  },
+  // template access point list
+  Items: tbody => {
+    return `<table>
+      <thead>
+        <tr>
+          <td>name</td>
+          <td>rsi</td>
+        </tr>
+      <thead>
+      <tbody>${ tbody }<tbody>
+    </table>`;
+  }
+};
 
+<<<<<<< HEAD
 <html>
   <head>
     <script>
@@ -177,3 +200,82 @@ body {
     </div>
   </body>
 </html>
+=======
+const renderApList = items => {
+  const tbody = items.map(Tpl.Item).join('');
+  return Tpl.Items(tbody);
+};
+// test
+const aps = [['test', 10], ['test1', 50]];
+// console.log(renderApList(aps));
+window.onload = () => {
+  console.log('page loaded!');
+  const el = document.getElementById('aps');
+  el.innerHTML = renderApList(aps);
+};
+
+</script><style>
+  * {
+    font-family:sans-serif;
+    font-size:12pt;
+  }
+  h1 {
+    font-size:16pt;
+    color:black;
+  }
+  h6 {
+    font-size:10pt;
+    color:black;
+    text-align:center;
+  }
+  .button-menu {
+    background-color:#ffffff;
+    color:blue;
+    margin: 10px;
+    text-decoration:none
+  }
+  .button-link {padding:5px 15px;
+    background-color:#0077dd;
+    color:#fff;
+    border:solid 1px #fff;
+    text-decoration:none
+  }
+  .button-menu:hover {
+    background:#ddddff;
+  }
+  .button-link:hover {
+    background:#369;
+  }
+  th {
+    padding:10px;
+    background-color:black;
+    color:#ffffff;}
+  td {
+    padding:7px;
+  }
+  table {
+    color:black;}
+  .div_l {
+    float: left;
+  }
+  .div_r {float: right;
+    margin: 2px;
+    padding: 1px 10px;
+    border-radius: 7px;
+    background-color:#080;
+    color:white;
+  }
+  .div_br {
+    clear: both;
+  }
+  .logo{
+    width: 50px;
+    height: 50px;
+    align: right;
+  }
+  #container{
+    width: 480px;
+    margin: auto;
+  }
+</style></head><body><div id="container"><h1 id="title">Welcome to ESP Easy</h1><div id="menu"></div><div id="aps"></div><h6>Powered by www.esp8266.nu</h6></div></body></html>
+>>>>>>> b18a417721045b0d734856435a3bd40cf7ac9745
